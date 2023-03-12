@@ -658,6 +658,7 @@ class _HomePageState extends State<HomePage> {
                             onPressed: () {
                               showLicensePage(
                                   context: context,
+                                  applicationIcon: ImageIcon(AssetImage("assets/data/icon.png")),
                                   applicationLegalese:
                                       "dirbtinis intelektas programėlėje nenaudojamas");
                             },

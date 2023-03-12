@@ -45,6 +45,7 @@ dependencies:
   encrypt: ^5.0.1
   just_audio_windows: ^0.2.0
   just_audio_mpv: ^0.1.6
+  flutter_launcher_icons: ^0.12.0
 
 dev_dependencies:
   flutter_test:
@@ -100,3 +101,20 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/data/icon.png"
+  min_sdk_android: 16 # android min sdk min:16, default 21
+  web:
+    generate: true
+    image_path: "assets/data/icon.png"
+    background_color: "#ffffff"
+    theme_color: "#4993e9"
+  windows:
+    generate: true
+    image_path: "assets/data/icon.png"
+    icon_size: 48 # min:48, max:256, default: 48
+  macos:
+    generate: true
+    image_path: "assets/data/icon.png"
