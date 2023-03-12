@@ -5,10 +5,10 @@
 // 'flutter create' template.
 
 // The application's name. By default this is also the title of the Flutter window.
-PRODUCT_NAME = Muzikos appsas;
+PRODUCT_NAME = GabalAI;
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.licas.muzika;
+PRODUCT_BUNDLE_IDENTIFIER = com.gabal.ai;
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2023 com.licas.muzika. All rights reserved.
+PRODUCT_COPYRIGHT = Copyleft GPL3.;

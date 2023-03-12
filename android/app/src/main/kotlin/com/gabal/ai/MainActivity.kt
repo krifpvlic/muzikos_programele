@@ -1,4 +1,4 @@
-package com.licas.muzika.muzikos_programele
+package com.gabal.ai
 
 import io.flutter.embedding.android.FlutterActivity
 

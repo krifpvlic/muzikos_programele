@@ -1,5 +1,5 @@
-//docx rodymui gal naudoti mammoth.js
-///tooltips, ctrl enter, search, ok enter, select only part,
+//dar būtinai local folder pick!!!
+//extra features future: tooltips, ctrl enter, search, ok enter, select only part, docx rodymui gal naudoti mammoth.js
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +15,7 @@ import 'package:encrypt/encrypt.dart' as enc;
 import 'dart:convert';
 
 String tsgurl = "https://acro.lt/musictest";
-String ver = "0";
+double ver = 0;
 String uri1 = "https://library.licejus.lt";
 late String basicAuth;
 String githuburl = "https://github.com/krifpvlic/muzikos_programele";
@@ -25,10 +25,16 @@ String testurl =
     "${uri1}/menai/1_kursas/1_semestras/1.azijos%20taut%C5%B3%20muzika/03%20-%20Tibetas%20-%20Lam%C5%B3%20giedojimas.mp3";
 String? _username;
 String? _password;
+bool isSkipped = false;
 String gplver = "";
 bool isSaved = false;
 late var decrypted;
 late var listConverted;
+Future<void> _setSkipped(bool bool1) async {
+  final prefs = await SharedPreferences.getInstance();
+  prefs.setBool('skipped', bool1);
+}
+
 Future<String> loadAsset() async {
   return rootBundle
       .loadString('assets/data/encrypted.file')
@@ -47,6 +53,7 @@ void main() async {
   final prefs = await SharedPreferences.getInstance();
   _username = prefs.getString('username');
   _password = prefs.getString('password');
+  if (prefs.getBool('skipped') == true) isSkipped = true;
   if (_username != null) {
     isSaved = true;
     //nuorodų sąrašo failo iššifravimas, "authorization header" generavimas
@@ -89,7 +96,7 @@ class MyApp extends StatelessWidget {
         builder: (theme, darkTheme) => MaterialApp(
               title: 'GabalAI',
               //jeigu yra išsaugoti prisijungimo duomenys, einam tiesiai į HomePage
-              home: !isSaved ? LoginPage() : HomePage(),
+              home: !isSaved&!isSkipped ? LoginPage() : HomePage(),
               theme: theme,
               darkTheme: darkTheme,
             ));
@@ -162,7 +169,9 @@ class _LoginPageState extends State<LoginPage> {
           prefs.setString('password', _password!);
           prefs.setString('basicAuth', basicAuth);
           listConverted = json.decode(decrypted);
-          Navigator.of(context).pop();
+          _setSkipped(false);
+          isSkipped=false;
+          //Navigator.of(context).pop();
           Navigator.of(context).push(MaterialPageRoute(
             builder: (context) => HomePage(),
           ));
@@ -176,7 +185,45 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text('Prisijungimas prie library.licejus.lt')),
+        appBar: AppBar(
+            title: Tooltip(
+        message: "Prisijungimas prie library.licejus.lt",
+        child:Text('Prisijungimas prie library.licejus.lt')),
+            actions: <Widget>[
+              Tooltip(
+                  message: "Praleisti",
+                  child: IconButton(
+                      icon: Icon(Icons.subdirectory_arrow_right_rounded),
+                      onPressed: () {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: Text('Ar tikrai norite praleisti?'),
+                                content: SingleChildScrollView(
+                                    child: Text(
+                                        "Praleidus prisijungimą nebus pasiekiami library.licejus.lt kūriniai, juos reikės įkelti iš savo įrenginio. Vėlesnis grįžimas į prisijungimo langą galimas.")),
+                                actions: [
+                                  TextButton(
+                                      onPressed: () {
+                                        _setSkipped(true);
+                                        isSkipped=true;
+                                        //Navigator.of(context).pop();
+                                        Navigator.of(context).push(MaterialPageRoute(
+                                          builder: (context) => HomePage(),
+                                        ));
+                                      },
+                                      child: Text("Suprantu")),
+                                  TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: Text("Grįžti"))
+                                ],
+                              );
+                            });
+                      }))
+            ]),
         body: Center(
             child: Form(
                 key: _formKey,
@@ -223,11 +270,19 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     ElevatedButton(
                       onPressed: _handleContinuePress,
-                      child: Text('Continue'),
+                      child: Text('Tęsti'),
                     ),
                     Padding(padding: EdgeInsets.all(5.0)),
-                    Text(
-                        "Naršyklės versijoje šiuos prisijungimus reikės pakartotinai įvesti"),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 20.0),
+                      child: Center(
+                        child: Text(
+                          "Naršyklės versijoje šiuos prisijungimus reikės pakartotinai įvesti",
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+
                   ],
                 ))));
   }
@@ -255,14 +310,14 @@ class _HomePageState extends State<HomePage> {
     if (response.statusCode == 200) {
       return response.body;
     } else {
-      throw Exception('Failed to load file');
+      return "0";
     }
   }
 
   void checkUpdates() async {
-    ver = await loadAsset();
+    ver = double.parse(await loadAsset());
     if (!kIsWeb) {
-      if (ver != await loadStringFromWebFile()) {
+      if (ver < double.parse(await loadStringFromWebFile())) {
         showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -301,7 +356,7 @@ class _HomePageState extends State<HomePage> {
 
   void initState() {
     super.initState();
-    loadlicejus();
+    isSkipped ? null : loadlicejus();
     checkUpdates();
     _loadSelection();
   }
@@ -388,13 +443,22 @@ class _HomePageState extends State<HomePage> {
     prefs.setString('semester', _selectedSemester!);
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
+          leading: isSkipped ? Tooltip(
+        message: "Grįžti į prisijungimą",
+        child:IconButton (
+            icon: Icon(Icons.arrow_back),
+            onPressed: () { Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => LoginPage(),
+            ));}
+          ) ): null,
           title: Tooltip(
-        message: "(dirbtinis intelektas programėlėje nenaudojamas)",
-        child:Text('GabalAI')),
+              message: "(dirbtinis intelektas programėlėje nenaudojamas)",
+              child: Text('GabalAI')),
           actions: <Widget>[
             if (!kIsWeb)
               Tooltip(
@@ -575,7 +639,8 @@ class _HomePageState extends State<HomePage> {
                                     builder: (BuildContext context) {
                                       return AlertDialog(
                                         title: Text('GPL v3'),
-                                        content: SingleChildScrollView(child:Text(gplver)),
+                                        content: SingleChildScrollView(
+                                            child: Text(gplver)),
                                         actions: [
                                           TextButton(
                                               onPressed: () {
@@ -592,7 +657,9 @@ class _HomePageState extends State<HomePage> {
                             child: Text('Kitos licencijos'),
                             onPressed: () {
                               showLicensePage(
-                                  context: context, applicationLegalese: "dirbtinis intelektas programėlėje nenaudojamas");
+                                  context: context,
+                                  applicationLegalese:
+                                      "dirbtinis intelektas programėlėje nenaudojamas");
                             },
                           ),
                           TextButton(
@@ -678,7 +745,7 @@ class _HomePageState extends State<HomePage> {
                 child: ElevatedButton(
                   child: Text('Tęsti'),
                   onPressed:
-                      _selectedCourse == null || _selectedSemester == null
+                      _selectedCourse == null || _selectedSemester == null || isSkipped
                           ? null
                           : () {
                               // perform action here

@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.licas.muzika" "\0"
-            VALUE "FileDescription", "Muzikos appsas" "\0"
+            VALUE "CompanyName", "com.gabal.ai" "\0"
+            VALUE "FileDescription", "GabalAI" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "Muzikos appsas" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2023 com.licas.muzika. All rights reserved." "\0"
+            VALUE "InternalName", "GabalAI" "\0"
+            VALUE "LegalCopyright", "Copyleft GPL3." "\0"
             VALUE "OriginalFilename", "muzikos_programele.exe" "\0"
-            VALUE "ProductName", "Muzikos appsas" "\0"
+            VALUE "ProductName", "GabalAI" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
