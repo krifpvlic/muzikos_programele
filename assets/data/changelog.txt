@@ -1,0 +1,3 @@
+Pakeitimų sąrašas:
+Programa perkelta į licėjaus serverį,
+Pakeistas pavadinimas, logotipas.

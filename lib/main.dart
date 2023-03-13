@@ -282,7 +282,7 @@ class _LoginPageState extends State<LoginPage> {
       Tooltip(
         message: "Informacija",
         child: IconButton(
-          icon: Icon(Icons.file_open_outlined),
+          icon: Icon(Icons.bug_report_rounded   ),
           onPressed: () {
             showDialog(
               context: context,
@@ -290,7 +290,7 @@ class _LoginPageState extends State<LoginPage> {
                 return AlertDialog(
                   title: Text('Informacija'),
                   content: Text(
-                      'Licencija - GPL v3\nProgramos versija - ${ver}\nSukūrė Kristupas Lapinskas'),
+                      'Licencija - GPL v3\nProgramos versija - ${ver}\nSukūrė Kristupas Lapinskas\n\nFunkcijų užklausos ir pranešimai apie trūkumus gali būti siunčiami GitHub arba kristupas.lapinskas@licejus.lt'),
                   actions: <Widget>[
                     TextButton(
                       child: Text('GPL v3'),
@@ -771,7 +771,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<String> loadStringFromWebFile() async {
     final response = await http.get(
-        Uri.parse("https://acro.lt/musictest/assets/assets/data/newversion"));
+        Uri.parse(tsgurl+"/assets/assets/data/newversion"));
     if (response.statusCode == 200) {
       return response.body;
     } else {
@@ -779,8 +779,18 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<String> loadChangelog() async {
+    final response = await http.get(
+        Uri.parse(tsgurl+"/assets/assets/data/changelog.txt"));
+    if (response.statusCode == 200) {
+      return response.body;
+    } else {
+      return "Pakeitimų sąrašo gavimo klaida.";
+    }
+  }
   void checkUpdates() async {
     ver = double.parse(await loadAsset());
+    String changelog = await loadChangelog();
     if (!kIsWeb) {
       if (ver < double.parse(await loadStringFromWebFile())) {
         showDialog(
@@ -788,7 +798,16 @@ class _HomePageState extends State<HomePage> {
           builder: (BuildContext context) {
             return AlertDialog(
               title: Text('Prieinamas atnaujinimas'),
-              content: ElevatedButton(
+              content: SingleChildScrollView(
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(changelog),
+                        Padding(
+                          padding: EdgeInsets.all(10.0),
+
+                        ),
+              ElevatedButton(
                 child: Text('Parsisiųsti'),
                 onPressed: () async {
                   if (Platform.isAndroid) {
@@ -803,7 +822,7 @@ class _HomePageState extends State<HomePage> {
                     }
                   }
                 },
-              ),
+              ),])),
               actions: <Widget>[
                 TextButton(
                   child: Text('Ignoruoti'),
