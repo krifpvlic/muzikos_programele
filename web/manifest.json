@@ -4,7 +4,7 @@
     "start_url": ".",
     "display": "standalone",
     "background_color": "#ffffff",
-    "theme_color": "#4993e9",
+    "theme_color": "#8484f2",
     "description": "Pasiruošimas muzikos klausymui",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,

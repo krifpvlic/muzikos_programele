@@ -46,6 +46,8 @@ dependencies:
   just_audio_windows: ^0.2.0
   just_audio_mpv: ^0.1.6
   flutter_launcher_icons: ^0.12.0
+  flex_color_scheme: ^6.1.2
+  google_fonts: ^4.0.3
 
 dev_dependencies:
   flutter_test:
@@ -110,7 +112,7 @@ flutter_icons:
     generate: true
     image_path: "assets/data/icon.png"
     background_color: "#ffffff"
-    theme_color: "#4993e9"
+    theme_color: "#8484f2"
   windows:
     generate: true
     image_path: "assets/data/icon.png"

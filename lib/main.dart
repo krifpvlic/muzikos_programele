@@ -1,7 +1,8 @@
 //dar būtinai local folder pick!!!
 //extra features future: tooltips, ctrl enter, search, ok enter, select only part, docx rodymui gal naudoti mammoth.js
 import 'dart:io';
-import 'package:flutter/cupertino.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -81,65 +82,64 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AdaptiveTheme(
-        light: ThemeData(
-          brightness: Brightness.light,
-          scaffoldBackgroundColor: Color.fromRGBO(233,233,249,1),
-          primarySwatch: MaterialColor(
-            0xFF8484f2,
-            {
-              50: Color(0xFFebeafd),
-              100: Color(0xFFcbcaf9),
-              200: Color(0xFFa8a7f6),
-              300: Color(0xFF8484f2),
-              400: Color(0xFF6966ee),
-              500: Color(0xFF5549e0),
-              600: Color(0xFF5040d4),
-              700: Color(0xFF4734c7),
-              800: Color(0xFF4128ba),
-              900: Color(0xFF370ba2),
-            },),
-          //accentColor: Colors.amber,
+        light: FlexThemeData.light(
+          colors: const FlexSchemeColor(
+            primary: Color(0xff8484f2),
+            primaryContainer: Color(0xff8484f2),
+            secondary: Color(0xffac3306),
+            secondaryContainer: Color(0xff8484f2),
+            tertiary: Color(0xff006875),
+            tertiaryContainer: Color(0xff95f0ff),
+            appBarColor: Color(0xff8484f2),
+            error: Color(0xffb00020),
+          ),
+          surfaceMode: FlexSurfaceMode.levelSurfacesLowScaffold,
+          blendLevel: 9,
+          subThemesData: const FlexSubThemesData(),
+          keyColors: const FlexKeyColors(
+            keepPrimary: true,
+            keepPrimaryContainer: true,
+            keepSecondaryContainer: true,
+          ),
+          visualDensity: FlexColorScheme.comfortablePlatformDensity,
           useMaterial3: true,
+          swapLegacyOnMaterial3: true,
+          fontFamily: GoogleFonts.raleway().fontFamily,
         ),
-        dark: ThemeData(
-          brightness: Brightness.dark,
-          scaffoldBackgroundColor: Color.fromRGBO(37,37,37,1),
-          primarySwatch:
-          //Color.fromRGBO(134, 134, 243,1),
-          MaterialColor(
-          0xFF8484f2,
-          {
-            50: Color(0xFFebeafd),
-            100: Color(0xFFcbcaf9),
-            200: Color(0xFFa8a7f6),
-            300: Color(0xFF8484f2),
-            400: Color(0xFF6966ee),
-            500: Color(0xFF5549e0),
-            600: Color(0xFF5040d4),
-            700: Color(0xFF4734c7),
-            800: Color(0xFF4128ba),
-            900: Color(0xFF370ba2),
-          },),
-          //accentColor: Color.fromRGBO(134, 134, 243,1),
-          //accentColor: Color.fromRGBO(244, 228, 253, 1),
-         // textTheme: const TextTheme(
-   // bodyText1: TextStyle(color: Color.fromRGBO(0, 0, 0, 1)),
-            //bodyText2: TextStyle(color: Color.fromRGBO(0, 0, 0, 1)),
-
-            //: TextStyle(color: Color.fromRGBO(244, 228, 253, 1)),
-        //  ),
+        dark: FlexThemeData.dark(
+          colors: const FlexSchemeColor(
+            primary: Color(0xff8484f2),
+            primaryContainer: Color(0xff8484f2),
+            secondary: Color(0xffac3306),
+            secondaryContainer: Color(0xff8484f2),
+            tertiary: Color(0xff006875),
+            tertiaryContainer: Color(0xff95f0ff),
+            appBarColor: Color(0xff8484f2),
+            error: Color(0xffb00020),
+          ),
+          surfaceMode: FlexSurfaceMode.levelSurfacesLowScaffold,
+          blendLevel: 15,
+          appBarStyle: FlexAppBarStyle.background,
+          subThemesData: const FlexSubThemesData(),
+          keyColors: const FlexKeyColors(
+            keepPrimary: true,
+            keepTertiary: true,
+            keepPrimaryContainer: true,
+            keepSecondaryContainer: true,
+          ),
+          visualDensity: FlexColorScheme.comfortablePlatformDensity,
           useMaterial3: true,
+          swapLegacyOnMaterial3: true,
+          fontFamily: GoogleFonts.raleway().fontFamily,
         ),
         initial: AdaptiveThemeMode.dark,
         builder: (theme, darkTheme) => MaterialApp(
               title: 'GabalAI',
               //jeigu yra išsaugoti prisijungimo duomenys, einam tiesiai į HomePage
-              home: !isSaved&!isSkipped ? LoginPage() : HomePage(),
+              home: !isSaved & !isSkipped ? LoginPage() : HomePage(),
               theme: theme,
               darkTheme: darkTheme,
-            )
-
-    );
+            ));
   }
 }
 
@@ -147,7 +147,6 @@ class MyApp extends StatelessWidget {
 class LoginPage extends StatefulWidget {
   @override
   _LoginPageState createState() => _LoginPageState();
-
 }
 
 class _LoginPageState extends State<LoginPage> {
@@ -161,60 +160,60 @@ class _LoginPageState extends State<LoginPage> {
   bool _passwordValid = false;
 
   //kopijuota iš kito class... negerai
-  List<Widget> mygtukai(BuildContext context){
-    return [if (!kIsWeb)
-      Tooltip(
-        message: "Nuoroda į web versiją",
-        child: IconButton(
-            icon: Icon(Icons.link),
-            onPressed: () {
-              showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: Text('Web versija: ${tsgurl}'),
-                      content: SingleChildScrollView(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              SizedBox(
-                                  width: 200,
-                                  height: 200,
-                                  child: Container(
-                                    color: Colors.white,
-                                    child: QrImage(
-                                      data: tsgurl,
-                                      version: QrVersions.auto,
-                                      size: 200,
-                                    ),
-                                  )),
-                              Padding(
-                                padding: EdgeInsets.all(5.0),
-                              ),
-                              ElevatedButton(
-                                child: Text('Eiti'),
-                                onPressed: () async {
-                                  if (await canLaunchUrlString(tsgurl)) {
-                                    launchUrlString(tsgurl,
-                                        mode:
-                                        LaunchMode.externalApplication);
-                                  }
-                                },
-                              ),
-                            ],
-                          )),
-                      actions: <Widget>[
-                        TextButton(
-                          child: Text('OK'),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                        ),
-                      ],
-                    );
-                  });
-            }),
-      ),
+  List<Widget> mygtukai(BuildContext context) {
+    return [
+      if (!kIsWeb)
+        Tooltip(
+          message: "Nuoroda į web versiją",
+          child: IconButton(
+              icon: Icon(Icons.link),
+              onPressed: () {
+                showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('Web versija: ${tsgurl}'),
+                        content: SingleChildScrollView(
+                            child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                                width: 200,
+                                height: 200,
+                                child: Container(
+                                  color: Colors.white,
+                                  child: QrImage(
+                                    data: tsgurl,
+                                    version: QrVersions.auto,
+                                    size: 200,
+                                  ),
+                                )),
+                            Padding(
+                              padding: EdgeInsets.all(5.0),
+                            ),
+                            ElevatedButton(
+                              child: Text('Eiti'),
+                              onPressed: () async {
+                                if (await canLaunchUrlString(tsgurl)) {
+                                  launchUrlString(tsgurl,
+                                      mode: LaunchMode.externalApplication);
+                                }
+                              },
+                            ),
+                          ],
+                        )),
+                        actions: <Widget>[
+                          TextButton(
+                            child: Text('OK'),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ],
+                      );
+                    });
+              }),
+        ),
       if (kIsWeb || Platform.isWindows)
         Tooltip(
           message: 'Android versijos parsisiuntimas',
@@ -247,11 +246,9 @@ class _LoginPageState extends State<LoginPage> {
                                 ElevatedButton(
                                   child: Text('Parsisiųsti'),
                                   onPressed: () async {
-                                    if (await canLaunchUrlString(
-                                        androidurl)) {
+                                    if (await canLaunchUrlString(androidurl)) {
                                       launchUrlString(androidurl,
-                                          mode: LaunchMode
-                                              .externalApplication);
+                                          mode: LaunchMode.externalApplication);
                                     }
                                   },
                                 ),
@@ -322,7 +319,7 @@ class _LoginPageState extends State<LoginPage> {
       Tooltip(
         message: "Informacija",
         child: IconButton(
-          icon: Icon(Icons.bug_report_rounded   ),
+          icon: Icon(Icons.bug_report_rounded),
           onPressed: () {
             showDialog(
               context: context,
@@ -360,9 +357,10 @@ class _LoginPageState extends State<LoginPage> {
                       onPressed: () {
                         showLicensePage(
                             context: context,
-                            applicationIcon: ImageIcon(AssetImage("assets/data/icon.png")),
+                            applicationIcon:
+                                ImageIcon(AssetImage("assets/data/icon.png")),
                             applicationLegalese:
-                            "dirbtinis intelektas programėlėje nenaudojamas");
+                                "dirbtinis intelektas programėlėje nenaudojamas");
                       },
                     ),
                     TextButton(
@@ -390,16 +388,19 @@ class _LoginPageState extends State<LoginPage> {
     ];
   }
 
-
   void failAuthDialog() {
     showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
             title: Text('Neteisingi prisijungimo duomenys'),
-            content: kDebugMode ? SingleChildScrollView(
-              child: Text(
-                  "Jeigu nežinote library.licejus.lt prisijungimo duomenų, yra galimybė įkelti savo aplanką praleidžiant prisijungimą, paspaudžiant rodyklę viršuje.")) : null,
+            content: kDebugMode
+                ? SingleChildScrollView(
+                    child: Text(
+                        "Jeigu nežinote library.licejus.lt prisijungimo duomenų, yra galimybė įkelti savo aplanką praleidžiant prisijungimą, paspaudžiant rodyklę viršuje."))
+                : SingleChildScrollView(
+                    child: Text(
+                        "Atkreipkite dėmesį, kad reikalingi ne asmeniniai, o library.licejus.lt prisijungimo duomenys.")),
             actions: <Widget>[
               TextButton(
                 child: Text('OK'),
@@ -445,7 +446,7 @@ class _LoginPageState extends State<LoginPage> {
           prefs.setString('basicAuth', basicAuth);
           listConverted = json.decode(decrypted);
           _setSkipped(false);
-          isSkipped=false;
+          isSkipped = false;
           //Navigator.of(context).pop();
           Navigator.of(context).push(MaterialPageRoute(
             builder: (context) => HomePage(),
@@ -462,43 +463,50 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
         appBar: AppBar(
             title: Tooltip(
-        message: "Prisijungimas prie library.licejus.lt",
-        child:Text('Prisijungimas prie library.licejus.lt')),
-            actions: kDebugMode ? mygtukai(context) + <Widget>[
-              Tooltip(
-                  message: "Praleisti",
-                  child: IconButton(
-                      icon: Icon(Icons.subdirectory_arrow_right_rounded),
-                      onPressed: () {
-                        showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: Text('Ar tikrai norite praleisti?'),
-                                content: SingleChildScrollView(
-                                    child: Text(
-                                        "Praleidus prisijungimą nebus pasiekiami library.licejus.lt kūriniai, juos reikės įkelti iš savo įrenginio. Vėlesnis grįžimas į prisijungimo langą galimas.")),
-                                actions: [
-                                  TextButton(
-                                      onPressed: () {
-                                        _setSkipped(true);
-                                        isSkipped=true;
-                                        //Navigator.of(context).pop();
-                                        Navigator.of(context).push(MaterialPageRoute(
-                                          builder: (context) => HomePage(),
-                                        ));
-                                      },
-                                      child: Text("Suprantu")),
-                                  TextButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                      child: Text("Grįžti"))
-                                ],
-                              );
-                            });
-                      }))
-            ] : mygtukai(context)),
+                message: "library.licejus.lt prisijungimas",
+                child: Text('library.licejus.lt prisijungimas')),
+            actions: kDebugMode
+                ? mygtukai(context) +
+                    <Widget>[
+                      Tooltip(
+                          message: "Praleisti",
+                          child: IconButton(
+                              icon:
+                                  Icon(Icons.subdirectory_arrow_right_rounded),
+                              onPressed: () {
+                                showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        title:
+                                            Text('Ar tikrai norite praleisti?'),
+                                        content: SingleChildScrollView(
+                                            child: Text(
+                                                "Praleidus prisijungimą nebus pasiekiami library.licejus.lt kūriniai, juos reikės įkelti iš savo įrenginio. Vėlesnis grįžimas į prisijungimo langą galimas.")),
+                                        actions: [
+                                          TextButton(
+                                              onPressed: () {
+                                                _setSkipped(true);
+                                                isSkipped = true;
+                                                //Navigator.of(context).pop();
+                                                Navigator.of(context)
+                                                    .push(MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      HomePage(),
+                                                ));
+                                              },
+                                              child: Text("Suprantu")),
+                                          TextButton(
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                              },
+                                              child: Text("Grįžti"))
+                                        ],
+                                      );
+                                    });
+                              }))
+                    ]
+                : mygtukai(context)),
         body: Center(
             child: Form(
                 key: _formKey,
@@ -551,13 +559,14 @@ class _LoginPageState extends State<LoginPage> {
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 20.0),
                       child: Center(
-                        child: kIsWeb ? Text(
-                          "Naršyklės versijoje šiuos prisijungimus reikės pakartotinai įvesti",
-                          textAlign: TextAlign.center,
-                        ) : null,
+                        child: kIsWeb
+                            ? Text(
+                                "Naršyklės versijoje šiuos prisijungimus reikės pakartotinai įvesti",
+                                textAlign: TextAlign.center,
+                              )
+                            : null,
                       ),
                     ),
-
                   ],
                 ))));
   }
@@ -574,60 +583,60 @@ class _HomePageState extends State<HomePage> {
 
   @override
   //kopijuota tas pats į kitą state... negerai
-  List<Widget> mygtukai(BuildContext context){
-    return [if (!kIsWeb)
-      Tooltip(
-        message: "Nuoroda į web versiją",
-        child: IconButton(
-            icon: Icon(Icons.link),
-            onPressed: () {
-              showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: Text('Web versija: ${tsgurl}'),
-                      content: SingleChildScrollView(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              SizedBox(
-                                  width: 200,
-                                  height: 200,
-                                  child: Container(
-                                    color: Colors.white,
-                                    child: QrImage(
-                                      data: tsgurl,
-                                      version: QrVersions.auto,
-                                      size: 200,
-                                    ),
-                                  )),
-                              Padding(
-                                padding: EdgeInsets.all(5.0),
-                              ),
-                              ElevatedButton(
-                                child: Text('Eiti'),
-                                onPressed: () async {
-                                  if (await canLaunchUrlString(tsgurl)) {
-                                    launchUrlString(tsgurl,
-                                        mode:
-                                        LaunchMode.externalApplication);
-                                  }
-                                },
-                              ),
-                            ],
-                          )),
-                      actions: <Widget>[
-                        TextButton(
-                          child: Text('OK'),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                        ),
-                      ],
-                    );
-                  });
-            }),
-      ),
+  List<Widget> mygtukai(BuildContext context) {
+    return [
+      if (!kIsWeb)
+        Tooltip(
+          message: "Nuoroda į web versiją",
+          child: IconButton(
+              icon: Icon(Icons.link),
+              onPressed: () {
+                showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('Web versija: ${tsgurl}'),
+                        content: SingleChildScrollView(
+                            child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                                width: 200,
+                                height: 200,
+                                child: Container(
+                                  color: Colors.white,
+                                  child: QrImage(
+                                    data: tsgurl,
+                                    version: QrVersions.auto,
+                                    size: 200,
+                                  ),
+                                )),
+                            Padding(
+                              padding: EdgeInsets.all(5.0),
+                            ),
+                            ElevatedButton(
+                              child: Text('Eiti'),
+                              onPressed: () async {
+                                if (await canLaunchUrlString(tsgurl)) {
+                                  launchUrlString(tsgurl,
+                                      mode: LaunchMode.externalApplication);
+                                }
+                              },
+                            ),
+                          ],
+                        )),
+                        actions: <Widget>[
+                          TextButton(
+                            child: Text('OK'),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ],
+                      );
+                    });
+              }),
+        ),
       if (kIsWeb || Platform.isWindows)
         Tooltip(
           message: 'Android versijos parsisiuntimas',
@@ -660,11 +669,9 @@ class _HomePageState extends State<HomePage> {
                                 ElevatedButton(
                                   child: Text('Parsisiųsti'),
                                   onPressed: () async {
-                                    if (await canLaunchUrlString(
-                                        androidurl)) {
+                                    if (await canLaunchUrlString(androidurl)) {
                                       launchUrlString(androidurl,
-                                          mode: LaunchMode
-                                              .externalApplication);
+                                          mode: LaunchMode.externalApplication);
                                     }
                                   },
                                 ),
@@ -735,7 +742,7 @@ class _HomePageState extends State<HomePage> {
       Tooltip(
         message: "Informacija",
         child: IconButton(
-          icon: Icon(Icons.bug_report_rounded   ),
+          icon: Icon(Icons.bug_report_rounded),
           onPressed: () {
             showDialog(
               context: context,
@@ -773,9 +780,10 @@ class _HomePageState extends State<HomePage> {
                       onPressed: () {
                         showLicensePage(
                             context: context,
-                            applicationIcon: ImageIcon(AssetImage("assets/data/icon.png")),
+                            applicationIcon:
+                                ImageIcon(AssetImage("assets/data/icon.png")),
                             applicationLegalese:
-                            "dirbtinis intelektas programėlėje nenaudojamas");
+                                "dirbtinis intelektas programėlėje nenaudojamas");
                       },
                     ),
                     TextButton(
@@ -810,8 +818,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<String> loadStringFromWebFile() async {
-    final response = await http.get(
-        Uri.parse(tsgurl+"/assets/assets/data/newversion"));
+    final response =
+        await http.get(Uri.parse(tsgurl + "/assets/assets/data/newversion"));
     if (response.statusCode == 200) {
       return response.body;
     } else {
@@ -820,14 +828,15 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<String> loadChangelog() async {
-    final response = await http.get(
-        Uri.parse(tsgurl+"/assets/assets/data/changelog.txt"));
+    final response =
+        await http.get(Uri.parse(tsgurl + "/assets/assets/data/changelog.txt"));
     if (response.statusCode == 200) {
       return response.body;
     } else {
       return "Pakeitimų sąrašo gavimo klaida.";
     }
   }
+
   void checkUpdates() async {
     ver = double.parse(await loadAsset());
     String changelog = await loadChangelog();
@@ -842,27 +851,27 @@ class _HomePageState extends State<HomePage> {
                   child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(changelog),
-                        Padding(
-                          padding: EdgeInsets.all(10.0),
-
-                        ),
-              ElevatedButton(
-                child: Text('Parsisiųsti'),
-                onPressed: () async {
-                  if (Platform.isAndroid) {
-                    if (await canLaunchUrlString(androidurl)) {
-                      launchUrlString(androidurl,
-                          mode: LaunchMode.externalApplication);
-                    }
-                  } else if (Platform.isWindows) {
-                    if (await canLaunchUrlString(windowsurl)) {
-                      launchUrlString(windowsurl,
-                          mode: LaunchMode.externalApplication);
-                    }
-                  }
-                },
-              ),])),
+                    Text(changelog),
+                    Padding(
+                      padding: EdgeInsets.all(10.0),
+                    ),
+                    ElevatedButton(
+                      child: Text('Parsisiųsti'),
+                      onPressed: () async {
+                        if (Platform.isAndroid) {
+                          if (await canLaunchUrlString(androidurl)) {
+                            launchUrlString(androidurl,
+                                mode: LaunchMode.externalApplication);
+                          }
+                        } else if (Platform.isWindows) {
+                          if (await canLaunchUrlString(windowsurl)) {
+                            launchUrlString(windowsurl,
+                                mode: LaunchMode.externalApplication);
+                          }
+                        }
+                      },
+                    ),
+                  ])),
               actions: <Widget>[
                 TextButton(
                   child: Text('Ignoruoti'),
@@ -967,26 +976,25 @@ class _HomePageState extends State<HomePage> {
     prefs.setString('semester', _selectedSemester!);
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          leading: isSkipped ? Tooltip(
-        message: "Grįžti į prisijungimą",
-        child:IconButton (
-            icon: Icon(Icons.arrow_back),
-            onPressed: () { Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => LoginPage(),
-            ));}
-          ) ): null,
+          leading: isSkipped
+              ? Tooltip(
+                  message: "Grįžti į prisijungimą",
+                  child: IconButton(
+                      icon: Icon(Icons.arrow_back),
+                      onPressed: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => LoginPage(),
+                        ));
+                      }))
+              : null,
           title: Tooltip(
               message: "(dirbtinis intelektas programėlėje nenaudojamas)",
               child: Text('GabalAI')),
-          actions:
-            mygtukai(context)
-          ,
+          actions: mygtukai(context),
         ),
         body: Center(
           child: Column(
@@ -997,11 +1005,11 @@ class _HomePageState extends State<HomePage> {
                 child: Text('Sveiki!', style: TextStyle(fontSize: 24.0)),
               ),
               Padding(
-                padding: EdgeInsets.all(16.0),
+                padding: EdgeInsets.all(8.0),
                 child: Text(''),
               ),
               Padding(
-                padding: EdgeInsets.all(16.0),
+                padding: EdgeInsets.all(10.0),
                 child: DropdownButton<String>(
                   hint: Text('Pasirinkti kursą'),
                   value: _selectedCourse,
@@ -1046,24 +1054,25 @@ class _HomePageState extends State<HomePage> {
                 padding: EdgeInsets.all(16.0),
                 child: ElevatedButton(
                   child: Text('Tęsti'),
-                  onPressed:
-                      _selectedCourse == null || _selectedSemester == null || isSkipped
-                          ? null
-                          : () {
-                              // perform action here
-                              _saveSelection();
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => DirectoryPage(
-                                    course: _selectedCourse!
-                                        .replaceAll(RegExp(r'[^0-9]'), ''),
-                                    semester: _selectedSemester!
-                                        .replaceAll(RegExp(r'[^0-9]'), ''),
-                                    listConverted: listConverted,
-                                  ),
-                                ),
-                              );
-                            },
+                  onPressed: _selectedCourse == null ||
+                          _selectedSemester == null ||
+                          isSkipped
+                      ? null
+                      : () {
+                          // perform action here
+                          _saveSelection();
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => DirectoryPage(
+                                course: _selectedCourse!
+                                    .replaceAll(RegExp(r'[^0-9]'), ''),
+                                semester: _selectedSemester!
+                                    .replaceAll(RegExp(r'[^0-9]'), ''),
+                                listConverted: listConverted,
+                              ),
+                            ),
+                          );
+                        },
                 ),
               ),
             ],
