@@ -1,6 +1,7 @@
 //dar būtinai local folder pick!!!
 //extra features future: tooltips, ctrl enter, search, ok enter, select only part, docx rodymui gal naudoti mammoth.js
 import 'dart:io';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -82,14 +83,51 @@ class MyApp extends StatelessWidget {
     return AdaptiveTheme(
         light: ThemeData(
           brightness: Brightness.light,
-          primarySwatch: Colors.blue,
-          accentColor: Colors.blueAccent,
+          scaffoldBackgroundColor: Color.fromRGBO(233,233,249,1),
+          primarySwatch: MaterialColor(
+            0xFF8484f2,
+            {
+              50: Color(0xFFebeafd),
+              100: Color(0xFFcbcaf9),
+              200: Color(0xFFa8a7f6),
+              300: Color(0xFF8484f2),
+              400: Color(0xFF6966ee),
+              500: Color(0xFF5549e0),
+              600: Color(0xFF5040d4),
+              700: Color(0xFF4734c7),
+              800: Color(0xFF4128ba),
+              900: Color(0xFF370ba2),
+            },),
+          //accentColor: Colors.amber,
           useMaterial3: true,
         ),
         dark: ThemeData(
           brightness: Brightness.dark,
-          primarySwatch: Colors.blue,
-          accentColor: Colors.blueAccent,
+          scaffoldBackgroundColor: Color.fromRGBO(37,37,37,1),
+          primarySwatch:
+          //Color.fromRGBO(134, 134, 243,1),
+          MaterialColor(
+          0xFF8484f2,
+          {
+            50: Color(0xFFebeafd),
+            100: Color(0xFFcbcaf9),
+            200: Color(0xFFa8a7f6),
+            300: Color(0xFF8484f2),
+            400: Color(0xFF6966ee),
+            500: Color(0xFF5549e0),
+            600: Color(0xFF5040d4),
+            700: Color(0xFF4734c7),
+            800: Color(0xFF4128ba),
+            900: Color(0xFF370ba2),
+          },),
+          //accentColor: Color.fromRGBO(134, 134, 243,1),
+          //accentColor: Color.fromRGBO(244, 228, 253, 1),
+         // textTheme: const TextTheme(
+   // bodyText1: TextStyle(color: Color.fromRGBO(0, 0, 0, 1)),
+            //bodyText2: TextStyle(color: Color.fromRGBO(0, 0, 0, 1)),
+
+            //: TextStyle(color: Color.fromRGBO(244, 228, 253, 1)),
+        //  ),
           useMaterial3: true,
         ),
         initial: AdaptiveThemeMode.dark,
@@ -99,7 +137,9 @@ class MyApp extends StatelessWidget {
               home: !isSaved&!isSkipped ? LoginPage() : HomePage(),
               theme: theme,
               darkTheme: darkTheme,
-            ));
+            )
+
+    );
   }
 }
 
@@ -695,7 +735,7 @@ class _HomePageState extends State<HomePage> {
       Tooltip(
         message: "Informacija",
         child: IconButton(
-          icon: Icon(Icons.file_open_outlined),
+          icon: Icon(Icons.bug_report_rounded   ),
           onPressed: () {
             showDialog(
               context: context,
@@ -703,7 +743,7 @@ class _HomePageState extends State<HomePage> {
                 return AlertDialog(
                   title: Text('Informacija'),
                   content: Text(
-                      'Licencija - GPL v3\nProgramos versija - ${ver}\nSukūrė Kristupas Lapinskas'),
+                      'Licencija - GPL v3\nProgramos versija - ${ver}\nSukūrė Kristupas Lapinskas\n\nFunkcijų užklausos ir pranešimai apie trūkumus gali būti siunčiami GitHub arba kristupas.lapinskas@licejus.lt'),
                   actions: <Widget>[
                     TextButton(
                       child: Text('GPL v3'),
