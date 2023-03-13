@@ -94,7 +94,7 @@ BEGIN
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "GabalAI" "\0"
             VALUE "LegalCopyright", "Copyleft GPL3." "\0"
-            VALUE "OriginalFilename", "muzikos_programele.exe" "\0"
+            VALUE "OriginalFilename", "gabalai.exe" "\0"
             VALUE "ProductName", "GabalAI" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END

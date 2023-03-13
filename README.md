@@ -1,4 +1,4 @@
-# muzikos_programele
+# GabalAI
 
 Pasiruošimas muzikos klausymui
 
