@@ -1,7 +1,3 @@
-// This is a minimal example demonstrating a play/pause button and a seek bar.
-// More advanced examples demonstrating other features can be found in the same
-// directory as this example in the GitHub repository.
-
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
@@ -114,28 +110,6 @@ class ListPlayState extends State<ListPlay> with WidgetsBindingObserver {
           );
         },
       ),
-      //],
-      //),
-      /*///perkopijuosim logika is appbar
-          floatingActionButton: true
-              ? FloatingActionButton(
-            onPressed: () {/*
-              if (player.playing) {
-                player.pause();
-              } else {
-                player.play();
-              }*/
-            },
-            tooltip: 'Play',
-            elevation: 0.0,
-            child: Icon(
-              //isPlaying ? Icons.pause : Icons.play_arrow,
-                Icons.play_arrow
-            ),
-          )
-              : null,
-          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-          */
       bottomNavigationBar: Column(mainAxisSize: MainAxisSize.min, children: [
         BottomAppBar(
           child: Column(

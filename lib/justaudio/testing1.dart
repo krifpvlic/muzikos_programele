@@ -35,7 +35,13 @@ class LearningPlay extends StatefulWidget {
   final String username;
   final String password;
   final String basicAuth;
-  const LearningPlay({Key? key, required this.linkList,required this.basicAuth,required this.username,required this.password}) : super(key: key);
+  const LearningPlay(
+      {Key? key,
+      required this.linkList,
+      required this.basicAuth,
+      required this.username,
+      required this.password})
+      : super(key: key);
 
   @override
   LearningPlayState createState() => LearningPlayState();
@@ -43,6 +49,7 @@ class LearningPlay extends StatefulWidget {
 
 class LearningPlayState extends State<LearningPlay>
     with WidgetsBindingObserver {
+  final GlobalKey<State> _key = GlobalKey<State>();
   var _isRandomize = true;
   var _selectedIndex;
   final _player = AudioPlayer();
@@ -50,6 +57,7 @@ class LearningPlayState extends State<LearningPlay>
   late List<int> queue;
   var showControls = false;
   int queuePos = 0;
+  bool okPressed = false;
 
   String uri1 = "https://library.licejus.lt";
 
@@ -58,7 +66,6 @@ class LearningPlayState extends State<LearningPlay>
         Uri.parse("${uri1}${musicPiecesList[queue[queuePos]]['link']}"),
         headers: {'Authorization': widget.basicAuth}));
     await _player.load();
-    //await _player.play();
     if (_player.duration != null) {
       if (_player.duration!.inSeconds > 60) {
         if (_isRandomize) {
@@ -128,28 +135,60 @@ class LearningPlayState extends State<LearningPlay>
     }
   }
 
+  void showInfo(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: Text('Informacija'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                        'Dabar grojamas ${(queuePos + 1).toString()} kūrinys iš ${(queue.length).toString()} eilėje.\n\nTestavimo veikimo principas:\nAtsitiktine tvarka leidžiami kūriniai, tikslas kuo daugiau jų atspėti. Atspėjus kūrinį pereinama prie kito, o neatspėjus parodomas teisingas atsakymas ir kūrinys vėl pridedamas prie eilės. Kūriniai grojami minutę.\n'),
+                    Icon(
+                      Icons.last_page_outlined,
+                    ),
+                    Text(
+                        'Paspaudus šį mygtuką galima pasiklausyti kūrinį iš naujo arba kitos jo dalies\n'),
+                    Icon(
+                      Icons.start_rounded,
+                    ),
+                    Text(
+                        'Paspaudus šį mygtuką kūriniai bus leidžiami nuo jų pradžios\n'),
+                    Icon(
+                      Icons.shuffle_rounded,
+                    ),
+                    Text(
+                        'Paspaudus šį mygtuką kūrinių pradžia bus atsitiktinai parenkama')
+                  ],
+                ),
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: Text('OK'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    okPressed = true;
+                  },
+                ),
+              ],
+            ));
+  }
+
   @override
   void initState() {
     super.initState();
-    //print("a");
     ambiguate(WidgetsBinding.instance)!.addObserver(this);
-    //print("b");
     musicPiecesList = createMusicPiecesList(widget.linkList);
-    //print("c");
     queue = divideIntoGroups(widget.linkList.length);
-    //print("d");
     if (kDebugMode) {
       print(queue);
     }
-    //handleIncorrectGuess(queue, 2);
-    //print(queue);
-
     _init();
   }
 
   Future<void> _init() async {
-    // Inform the operating system of our app's audio attributes etc.
-    // We pick a reasonable default for an app that plays speech.
     final session = await AudioSession.instance;
     await session.configure(const AudioSessionConfiguration.music());
     // Listen to errors during playback.
@@ -159,6 +198,21 @@ class LearningPlayState extends State<LearningPlay>
     });
     if (kDebugMode) {
       print("${uri1}${musicPiecesList[queuePos]['link']}");
+    }
+    final prefs = await SharedPreferences.getInstance();
+    double infoLevel = prefs.getDouble('infoLevel') ?? 0;
+    if(infoLevel < 2) {
+      Future.delayed(Duration.zero, () {
+        if (_key.currentContext != null) {
+          showInfo(_key.currentContext!);
+        }
+        prefs.setDouble('infoLevel', 2);
+      });
+
+    }
+    else okPressed = true;
+    while (!okPressed) {
+      await Future.delayed(Duration(milliseconds: 100));
     }
     play();
     // Try to load audio from a source and catch any errors.
@@ -215,6 +269,7 @@ class LearningPlayState extends State<LearningPlay>
     }
 
     return Scaffold(
+        key: _key,
         appBar:
             AppBar(title: const Text("Pasirinkite kūrinį"), actions: <Widget>[
           IconButton(
@@ -246,48 +301,7 @@ class LearningPlayState extends State<LearningPlay>
           IconButton(
             icon: Icon(Icons.info),
             onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: Text('Informacija'),
-                    content: SingleChildScrollView(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                              'Dabar grojamas ${(queuePos + 1).toString()} kūrinys iš ${(queue.length).toString()} eilėje.\n\nTestavimo veikimo principas:\nAtsitiktine tvarka leidžiami kūriniai, tikslas kuo daugiau jų atspėti. Atspėjus kūrinį pereinama prie kito, o neatspėjus parodomas teisingas atsakymas ir kūrinys vėl pridedamas prie eilės. Kūriniai grojami minutę.\n'),
-
-                          Icon(
-                            Icons.last_page_outlined,
-                          ),
-                          Text('Paspaudus šį mygtuką galima pasiklausyti kūrinį iš naujo arba kitos jo dalies\n')
-                        ,
-                            Icon(
-                              Icons.start_rounded,
-                            ),
-                            Text('Paspaudus šį mygtuką kūriniai bus leidžiami nuo jų pradžios\n')
-                          ,
-
-                            Icon(
-                              Icons.shuffle_rounded,
-                            ),
-                            Text('Paspaudus šį mygtuką kūrinių pradžia bus atsitiktinai parenkama')
-
-                        ],
-                      ),
-                    ),
-                    actions: <Widget>[
-                      TextButton(
-                        child: Text('OK'),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    ],
-                  );
-                },
-              );
+              showInfo(context);
             },
           ),
         ]),
@@ -347,9 +361,7 @@ class LearningPlayState extends State<LearningPlay>
                     : null,
                 tooltip: 'Pasirinkti',
                 elevation: 0.0,
-                child: Icon(
-                    //isPlaying ? Icons.pause : Icons.play_arrow,
-                    Icons.check_rounded),
+                child: Icon(Icons.check_rounded),
               )
             : null,
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,

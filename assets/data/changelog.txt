@@ -1,3 +1,6 @@
 Pakeitimų sąrašas:
-Programa perkelta į licėjaus serverį,
-Pakeistas pavadinimas, logotipas.
+
+Atnaujinti Flutter paketai
+Įdiegta plausible.io analitikos sistema (neprivaloma)
+Pirmo paleidimo metu paaiškinamas testavimo veikimas
+

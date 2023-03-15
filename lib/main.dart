@@ -1,5 +1,3 @@
-//dar būtinai local folder pick!!!
-//extra features future: tooltips, ctrl enter, search, ok enter, select only part, docx rodymui gal naudoti mammoth.js
 import 'dart:io';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
@@ -15,7 +13,7 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:http/http.dart' as http;
 import 'package:encrypt/encrypt.dart' as enc;
 import 'dart:convert';
-
+import 'package:plausible_analytics/plausible_analytics.dart';
 double ver = 0;
 String uri1 = "https://library.licejus.lt";
 late String basicAuth;
@@ -30,8 +28,73 @@ String? _password;
 bool isSkipped = false;
 String gplver = "";
 bool isSaved = false;
+bool _isDarkMode = true;
+int analyticsEnabled = 0;
 late var decrypted;
 late var listConverted;
+final plausible = Plausible("https://plausible.io", "gabalai.licejus.lt");
+final GlobalKey<State> _key = GlobalKey<State>();
+
+void setAnalytics(int value) async{
+  final prefs = await SharedPreferences.getInstance();
+  prefs.setInt('analytics', value);
+  analyticsEnabled = value;
+  if(value == 1) plausible.enabled = true;
+}
+
+void analyticsDialog() async{
+    while (_key.currentContext == null) {
+      await Future.delayed(Duration(milliseconds: 100));
+    }
+    if (_key.currentContext != null) {
+      print("b");
+      showDialog(
+          context: _key.currentContext!,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Sutikimas'),
+              content: SingleChildScrollView(
+
+              child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 600),
+              child: Column(
+                      children: [ Text(
+                      "Šioje programoje naudojamas plausible.io - duomenų privatumą užtikrinantis, atviro kodo svetainių ir programų analitikos įrankis. Paspaudus \"Sutinku\" įrankis bus įgalintas, o jo naudojimo galima  atsisakyti paspaudus \"Nesutinku\".\n"),
+                        InkWell(
+                          child: Text(
+                            'plausible.io duomenų politika',
+                            style: TextStyle(color: Colors.blue),
+                          ),
+                          onTap: () async {
+                            if (await canLaunchUrlString(
+                                "https://plausible.io/data-policy")) {
+                              launchUrlString("https://plausible.io/data-policy");
+                            }
+                          },
+                        ),
+
+                ]))),
+              actions: <Widget>[
+                TextButton(
+                  child: Text('Nesutinku'),
+                  onPressed: () {
+                    setAnalytics(0);
+                    Navigator.of(context).pop();
+                  },
+                ),
+                TextButton(
+                  child: Text('Sutinku'),
+                  onPressed: () {
+                    setAnalytics(1);
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          });
+    };
+}
+
 Future<void> _setSkipped(bool bool1) async {
   final prefs = await SharedPreferences.getInstance();
   prefs.setBool('skipped', bool1);
@@ -53,6 +116,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   //bandom ieškoti ar jau yra išsaugoti prisijungimai
   final prefs = await SharedPreferences.getInstance();
+  final savedThemeMode = await AdaptiveTheme.getThemeMode();
+  if(savedThemeMode==AdaptiveThemeMode.dark) _isDarkMode = true;
+  else _isDarkMode = false;
   _username = prefs.getString('username');
   _password = prefs.getString('password');
   if (prefs.getBool('skipped') == true) isSkipped = true;
@@ -73,10 +139,16 @@ void main() async {
     listConverted = json.decode(decrypted);
   }
   gplver = await loadGpl();
+  analyticsEnabled = prefs.getInt('analytics') ?? -1;
+  print(analyticsEnabled);
+  if (analyticsEnabled == 0) plausible.enabled = false;
+  else if (analyticsEnabled == -1) {
+    plausible.enabled = false;
+    analyticsDialog();
+    print("a");
+  }
   runApp(MyApp());
 }
-
-bool _isDarkMode = true;
 
 class MyApp extends StatelessWidget {
   @override
@@ -86,7 +158,7 @@ class MyApp extends StatelessWidget {
           colors: const FlexSchemeColor(
             primary: Color(0xff8484f2),
             primaryContainer: Color(0xff8484f2),
-            secondary: Color(0xffac3306),
+            secondary: Color(0xff8484f2),
             secondaryContainer: Color(0xff8484f2),
             tertiary: Color(0xff006875),
             tertiaryContainer: Color(0xff95f0ff),
@@ -110,7 +182,7 @@ class MyApp extends StatelessWidget {
           colors: const FlexSchemeColor(
             primary: Color(0xff8484f2),
             primaryContainer: Color(0xff8484f2),
-            secondary: Color(0xffac3306),
+            secondary: Color(0xff8484f2),
             secondaryContainer: Color(0xff8484f2),
             tertiary: Color(0xff006875),
             tertiaryContainer: Color(0xff95f0ff),
@@ -461,6 +533,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        key: _key,
         appBar: AppBar(
             title: Tooltip(
                 message: "library.licejus.lt prisijungimas",
@@ -580,6 +653,15 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String? _selectedCourse;
   String? _selectedSemester;
+  final event = plausible.event(
+      name: 'homepage',
+      page: 'homepage',
+      props: {
+        'app_version': ver.toString(),
+        'app_platform': kIsWeb ? 'web' : Platform.isWindows ? 'windows' : Platform.isAndroid ? 'android' : 'unknown',
+        'app_theme': _isDarkMode ? 'dark' : 'light',
+        'app_debug': kDebugMode ? 'debug' : 'release',
+      });
 
   @override
   //kopijuota tas pats į kitą state... negerai
@@ -979,6 +1061,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        key: _key,
         appBar: AppBar(
           leading: isSkipped
               ? Tooltip(
