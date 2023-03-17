@@ -1,3 +1,4 @@
+import 'package:matomo_tracker/matomo_tracker.dart';
 import 'dart:io';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
@@ -13,7 +14,8 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:http/http.dart' as http;
 import 'package:encrypt/encrypt.dart' as enc;
 import 'dart:convert';
-import 'package:plausible_analytics/plausible_analytics.dart';
+import 'addlicences.dart';
+
 double ver = 0;
 String uri1 = "https://library.licejus.lt";
 late String basicAuth;
@@ -32,67 +34,86 @@ bool _isDarkMode = true;
 int analyticsEnabled = 0;
 late var decrypted;
 late var listConverted;
-final plausible = Plausible("https://plausible.io", "gabalai.licejus.lt");
+//final plausible = Plausible("https://plausible.io", "gabalai.licejus.lt");
+
 final GlobalKey<State> _key = GlobalKey<State>();
 
-void setAnalytics(int value) async{
+void setAnalytics(int value) async {
   final prefs = await SharedPreferences.getInstance();
   prefs.setInt('analytics', value);
   analyticsEnabled = value;
-  if(value == 1) plausible.enabled = true;
+  if (value == 1) {
+    /*if(kIsWeb){
+      html.ScriptElement script = new html.ScriptElement();
+      script.setAttribute('defer', '');
+      script.setAttribute('data-domain', 'gabalai.licejus.lt');
+      script.src = 'https://plausible.io/js/script.hash.js';
+      html.document.head?.append(script);
+    }
+      else{
+      plausible.enabled = true;}*/
+    await MatomoTracker.instance.initialize(
+      siteId: 1,
+      url: 'https://gabalai.licejus.lt/matomo/matomo.php',
+    );
+
+    //html.window.localStorage['plausible_ignore']='false';
+  }
 }
 
-void analyticsDialog() async{
-    while (_key.currentContext == null) {
-      await Future.delayed(Duration(milliseconds: 100));
-    }
-    if (_key.currentContext != null) {
-      print("b");
-      showDialog(
-          context: _key.currentContext!,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('Sutikimas'),
-              content: SingleChildScrollView(
-
-              child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: 600),
-              child: Column(
-                      children: [ Text(
-                      "Šioje programoje naudojamas plausible.io - duomenų privatumą užtikrinantis, atviro kodo svetainių ir programų analitikos įrankis. Paspaudus \"Sutinku\" įrankis bus įgalintas, o jo naudojimo galima  atsisakyti paspaudus \"Nesutinku\".\n"),
-                        InkWell(
-                          child: Text(
-                            'plausible.io duomenų politika',
-                            style: TextStyle(color: Colors.blue),
-                          ),
-                          onTap: () async {
-                            if (await canLaunchUrlString(
-                                "https://plausible.io/data-policy")) {
-                              launchUrlString("https://plausible.io/data-policy");
-                            }
-                          },
+void analyticsDialog() async {
+  while (_key.currentContext == null) {
+    await Future.delayed(Duration(milliseconds: 100));
+  }
+  if (_key.currentContext != null) {
+    showDialog(
+        context: _key.currentContext!,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Sutikimas'),
+            content: SingleChildScrollView(
+                child: ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: 600),
+                    child: Column(children: [
+                      Text(
+                          "Šioje programoje naudojamas plausible.io - duomenų privatumą užtikrinantis, atviro kodo svetainių ir programų analitikos įrankis. Paspaudus \"Sutinku\" įrankis bus įgalintas, o jo naudojimo galima  atsisakyti paspaudus \"Nesutinku\".\n"),
+                      InkWell(
+                        child: Text(
+                          'plausible.io duomenų politika',
+                          style: TextStyle(color: Colors.blue),
                         ),
+                        onTap: () async {
+                          if (await canLaunchUrlString(
+                              "https://plausible.io/data-policy")) {
+                            launchUrlString("https://plausible.io/data-policy");
+                          }
+                        },
+                      ),
+                    ]))),
+            actions: <Widget>[
+              TextButton(
+                child: Text('Nesutinku'),
+                onPressed: () {
 
-                ]))),
-              actions: <Widget>[
-                TextButton(
-                  child: Text('Nesutinku'),
-                  onPressed: () {
-                    setAnalytics(0);
-                    Navigator.of(context).pop();
-                  },
-                ),
-                TextButton(
-                  child: Text('Sutinku'),
-                  onPressed: () {
-                    setAnalytics(1);
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
-            );
-          });
-    };
+                  MatomoTracker.instance.setOptOut(optout: true);
+                  setAnalytics(0);
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: Text('Sutinku'),
+                onPressed: () {
+
+                  MatomoTracker.instance.setOptOut(optout: false);
+                  setAnalytics(1);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        });
+  }
+  ;
 }
 
 Future<void> _setSkipped(bool bool1) async {
@@ -114,11 +135,26 @@ Future<String> loadGpl() async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  //bandom ieškoti ar jau yra išsaugoti prisijungimai
+  addLicences();
+
   final prefs = await SharedPreferences.getInstance();
   final savedThemeMode = await AdaptiveTheme.getThemeMode();
-  if(savedThemeMode==AdaptiveThemeMode.dark) _isDarkMode = true;
-  else _isDarkMode = false;
+  if (savedThemeMode == AdaptiveThemeMode.light)
+    _isDarkMode = false;
+  else
+    _isDarkMode = true;
+  analyticsEnabled = prefs.getInt('analytics') ?? -1;
+  if (analyticsEnabled == -1) {
+
+    MatomoTracker.instance.setOptOut(optout: true);
+    analyticsDialog();
+  } else if (analyticsEnabled == 1) {
+    await MatomoTracker.instance.initialize(
+      siteId: 1,
+      url: 'https://gabalai.licejus.lt/matomo/matomo.php',
+    );
+  }
+
   _username = prefs.getString('username');
   _password = prefs.getString('password');
   if (prefs.getBool('skipped') == true) isSkipped = true;
@@ -139,14 +175,7 @@ void main() async {
     listConverted = json.decode(decrypted);
   }
   gplver = await loadGpl();
-  analyticsEnabled = prefs.getInt('analytics') ?? -1;
-  print(analyticsEnabled);
-  if (analyticsEnabled == 0) plausible.enabled = false;
-  else if (analyticsEnabled == -1) {
-    plausible.enabled = false;
-    analyticsDialog();
-    print("a");
-  }
+
   runApp(MyApp());
 }
 
@@ -432,7 +461,8 @@ class _LoginPageState extends State<LoginPage> {
                             applicationIcon:
                                 ImageIcon(AssetImage("assets/data/icon.png")),
                             applicationLegalese:
-                                "dirbtinis intelektas programėlėje nenaudojamas");
+                                "dirbtinis intelektas programėlėje nenaudojamas",
+                        );
                       },
                     ),
                     TextButton(
@@ -510,6 +540,7 @@ class _LoginPageState extends State<LoginPage> {
         final encrypted = enc.Encrypted.fromBase64(encryptedFile);
         decrypted = encrypter.decrypt(encrypted, iv: iv);
         if (decrypted[0] != "{") {
+          print("a");
           failAuthDialog();
         } else {
           final prefs = await SharedPreferences.getInstance();
@@ -520,7 +551,7 @@ class _LoginPageState extends State<LoginPage> {
           _setSkipped(false);
           isSkipped = false;
           //Navigator.of(context).pop();
-          Navigator.of(context).push(MaterialPageRoute(
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
             builder: (context) => HomePage(),
           ));
         }
@@ -533,7 +564,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        key: _key,
+        key: _key.currentContext == null ? _key : null,
         appBar: AppBar(
             title: Tooltip(
                 message: "library.licejus.lt prisijungimas",
@@ -650,10 +681,10 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with TraceableClientMixin {
   String? _selectedCourse;
   String? _selectedSemester;
-  final event = plausible.event(
+  /*final event = plausible.event(
       name: 'homepage',
       page: 'homepage',
       props: {
@@ -661,7 +692,7 @@ class _HomePageState extends State<HomePage> {
         'app_platform': kIsWeb ? 'web' : Platform.isWindows ? 'windows' : Platform.isAndroid ? 'android' : 'unknown',
         'app_theme': _isDarkMode ? 'dark' : 'light',
         'app_debug': kDebugMode ? 'debug' : 'release',
-      });
+      });*/
 
   @override
   //kopijuota tas pats į kitą state... negerai
@@ -868,6 +899,7 @@ class _HomePageState extends State<HomePage> {
                                 "dirbtinis intelektas programėlėje nenaudojamas");
                       },
                     ),
+
                     TextButton(
                       child: Text('GitHub'),
                       onPressed: () async {
@@ -1061,7 +1093,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        key: _key,
+        key: _key.currentContext == null ? _key : null,
         appBar: AppBar(
           leading: isSkipped
               ? Tooltip(
@@ -1162,4 +1194,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ));
   }
+
+  @override
+  String get traceTitle => "GabalAI";
 }
