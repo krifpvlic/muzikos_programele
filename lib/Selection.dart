@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:muzikos_programele/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'justaudio/listening.dart';
@@ -21,7 +22,7 @@ class DirectoryPage extends StatefulWidget {
   _DirectoryPageState createState() => _DirectoryPageState();
 }
 
-class _DirectoryPageState extends State<DirectoryPage> {
+class _DirectoryPageState extends State<DirectoryPage> with TraceableClientMixin{
   String? _selectedFolder;
   late var _linkListStr;
   late String _username;
@@ -166,4 +167,8 @@ class _DirectoryPageState extends State<DirectoryPage> {
           ),
         ));
   }
+  @override
+  String get traceName => 'Selection ${widget.course}k';
+  @override
+  String get traceTitle => "GabalAI";
 }

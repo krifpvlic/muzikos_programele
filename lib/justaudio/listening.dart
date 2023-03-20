@@ -4,7 +4,7 @@ import 'package:just_audio/just_audio.dart';
 import 'common.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:path/path.dart' as p;
-
+import 'package:matomo_tracker/matomo_tracker.dart';
 String uri1 = "https://library.licejus.lt";
 
 class ListPlay extends StatefulWidget {
@@ -18,7 +18,7 @@ class ListPlay extends StatefulWidget {
   ListPlayState createState() => ListPlayState();
 }
 
-class ListPlayState extends State<ListPlay> with WidgetsBindingObserver {
+class ListPlayState extends State<ListPlay> with WidgetsBindingObserver, TraceableClientMixin {
   final _player = AudioPlayer();
   int _selectedIndex = -1;
   @override
@@ -139,6 +139,10 @@ class ListPlayState extends State<ListPlay> with WidgetsBindingObserver {
       ]),
     );
   }
+  @override
+  String get traceName => 'Listening';
+  @override
+  String get traceTitle => "GabalAI";
 }
 
 /// Displays the play/pause button and volume/speed sliders.

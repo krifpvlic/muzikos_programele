@@ -8,17 +8,21 @@ import 'package:audio_session/audio_session.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:matomo_tracker/matomo_tracker.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import 'common.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:path/path.dart';
+import 'package:path/path.dart' as Path;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
 
 List<Map<String, dynamic>> createMusicPiecesList(List<String> links) {
   return List.generate(
       links.length,
       (i) => {
             "link": links[i],
-            "name": Uri.decodeComponent(basenameWithoutExtension(links[i])),
+            "name":
+                Uri.decodeComponent(Path.basenameWithoutExtension(links[i])),
             "correct": 0,
             "incorrect": 0
           });
@@ -48,7 +52,7 @@ class LearningPlay extends StatefulWidget {
 }
 
 class LearningPlayState extends State<LearningPlay>
-    with WidgetsBindingObserver {
+    with WidgetsBindingObserver, TraceableClientMixin {
   final GlobalKey<State> _key = GlobalKey<State>();
   var _isRandomize = true;
   var _selectedIndex;
@@ -58,13 +62,68 @@ class LearningPlayState extends State<LearningPlay>
   var showControls = false;
   int queuePos = 0;
   bool okPressed = false;
+  bool over10 = false;
 
   String uri1 = "https://library.licejus.lt";
 
-  Future<void> play() async {
-    await _player.setAudioSource(AudioSource.uri(
-        Uri.parse("${uri1}${musicPiecesList[queue[queuePos]]['link']}"),
-        headers: {'Authorization': widget.basicAuth}));
+  Future<void> play(BuildContext context) async {
+    try {
+      await _player.setAudioSource(AudioSource.uri(
+          Uri.parse("${uri1}${musicPiecesList[queue[queuePos]]['link']}"),
+          headers: {'Authorization': widget.basicAuth}));
+    } catch (e) {
+      showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Nepasiekiami muzikos failai'),
+              content: SingleChildScrollView(
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                    const Text(
+                      'Spauskite "Bandyti vėl" arba',
+                      style: TextStyle(fontSize: 20),
+                    ),
+                    if (kIsWeb)
+                      InkWell(
+                        child: const Text(
+                          'atidarykite library.licejus.lt, prisijunkite ir spauskite "Bandyti vėl"',
+                          style:
+                              TextStyle(color: Color(0xff8484f2), fontSize: 20),
+                        ),
+                        onTap: () async {
+                          if (await canLaunchUrlString(
+                              "https://library.licejus.lt")) {
+                            launchUrlString("https://library.licejus.lt");
+                          }
+                        },
+                      ),
+                    if (kIsWeb)
+                      const Text(
+                          "\nŠią spragą galima apeiti naudojant Android arba Windows programas, kurias galima parsisiųsti pagrindinio puslapio viršuje.\n\n"),
+                    const Text("Kiti problemos sprendimo būdai:"),
+                    const Text(
+                        '1) Patikrinti, ar pasiekiamas interneto ryšys\n2) Pabandyti programą kitame tinkle/įrenginyje'),
+                  ])),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Ignoruoti'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+                TextButton(
+                  child: const Text('Bandyti vėl'),
+                  onPressed: () {
+                    play(context);
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          });
+    }
     await _player.load();
     if (_player.duration != null) {
       if (_player.duration!.inSeconds > 60) {
@@ -135,8 +194,9 @@ class LearningPlayState extends State<LearningPlay>
     }
   }
 
-  void showInfo(BuildContext context) {
+  void showInfo(BuildContext context, bool barrierDismissible) {
     showDialog(
+      barrierDismissible: barrierDismissible,
         context: context,
         builder: (BuildContext context) => AlertDialog(
               title: Text('Informacija'),
@@ -185,10 +245,10 @@ class LearningPlayState extends State<LearningPlay>
     if (kDebugMode) {
       print(queue);
     }
-    _init();
+    _init(context);
   }
 
-  Future<void> _init() async {
+  Future<void> _init(BuildContext context) async {
     final session = await AudioSession.instance;
     await session.configure(const AudioSessionConfiguration.music());
     // Listen to errors during playback.
@@ -201,20 +261,19 @@ class LearningPlayState extends State<LearningPlay>
     }
     final prefs = await SharedPreferences.getInstance();
     double infoLevel = prefs.getDouble('infoLevel') ?? 0;
-    if(infoLevel < 2) {
+    if (infoLevel < 2) {
       Future.delayed(Duration.zero, () {
         if (_key.currentContext != null) {
-          showInfo(_key.currentContext!);
+          showInfo(_key.currentContext!,false);
         }
         prefs.setDouble('infoLevel', 2);
       });
-
-    }
-    else okPressed = true;
+    } else
+      okPressed = true;
     while (!okPressed) {
       await Future.delayed(Duration(milliseconds: 100));
     }
-    play();
+    play(context);
     // Try to load audio from a source and catch any errors.
 
     // AAC example: https://dl.espressif.com/dl/audio/ff-16b-2c-44100hz.aac
@@ -266,6 +325,10 @@ class LearningPlayState extends State<LearningPlay>
       } else {
         Navigator.of(context).pop();
       }
+      if (queuePos > 9 && !over10) {
+        MatomoTracker.instance.trackGoal(1);
+        over10 = true;
+      }
     }
 
     return Scaffold(
@@ -295,13 +358,13 @@ class LearningPlayState extends State<LearningPlay>
               icon: Icon(Icons.check),
               onPressed: () {
                 handleCorrectGuess(queue, queuePos, musicPiecesList);
-                play();
+                play(context);
               },
             ),
           IconButton(
             icon: Icon(Icons.info),
             onPressed: () {
-              showInfo(context);
+              showInfo(context,true);
             },
           ),
         ]),
@@ -333,7 +396,7 @@ class LearningPlayState extends State<LearningPlay>
                     ? () {
                         if (_selectedIndex == queue[queuePos]) {
                           handleCorrectGuess(queue, queuePos, musicPiecesList);
-                          play();
+                          play(context);
                         } else {
                           handleIncorrectGuess(
                               queue, queuePos, musicPiecesList);
@@ -349,13 +412,12 @@ class LearningPlayState extends State<LearningPlay>
                                     child: Text('OK'),
                                     onPressed: () {
                                       Navigator.of(context).pop();
-                                      play();
                                     },
                                   ),
                                 ],
                               );
                             },
-                          );
+                          ).then((_) => play(context));
                         }
                       }
                     : null,
@@ -403,6 +465,11 @@ class LearningPlayState extends State<LearningPlay>
               ])
             : null);
   }
+
+  @override
+  String get traceName => 'Testing';
+  @override
+  String get traceTitle => "GabalAI";
 }
 
 /// Displays the play/pause button and volume/speed sliders.

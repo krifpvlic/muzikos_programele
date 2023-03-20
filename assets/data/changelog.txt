@@ -1,6 +1,9 @@
 Pakeitimų sąrašas:
 
 Atnaujinti Flutter paketai
-Įdiegta plausible.io analitikos sistema (neprivaloma)
+Web versijoje pridėta krovimosi animacija
+Minimalūs paleidimo greičio optimizavimai
+Įdiegta Matomo analitikos sistema (pasirenkama, neprivaloma)
 Pirmo paleidimo metu paaiškinamas testavimo veikimas
-
+Pridėta versijos ignoravimo funkcija
+Sutvarkytas paspaudimo už iššokusio lango ribų funkcionalumas neteisingai atspėjus kūrinį

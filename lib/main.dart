@@ -1,3 +1,5 @@
+import 'dart:html' as Html;
+
 import 'package:matomo_tracker/matomo_tracker.dart';
 import 'dart:io';
 import 'package:google_fonts/google_fonts.dart';
@@ -21,10 +23,10 @@ String uri1 = "https://library.licejus.lt";
 late String basicAuth;
 String githuburl = "https://github.com/krifpvlic/muzikos_programele";
 String tsgurl = "https://gabalai.licejus.lt";
-String windowsurl = tsgurl + "/gabalai_windows.zip";
-String androidurl = tsgurl + "/gabalai.apk";
+String windowsurl = "$tsgurl/gabalai_windows.zip";
+String androidurl = "$tsgurl/gabalai.apk";
 String testurl =
-    "${uri1}/menai/1_kursas/1_semestras/1.azijos%20taut%C5%B3%20muzika/03%20-%20Tibetas%20-%20Lam%C5%B3%20giedojimas.mp3";
+    "$uri1/menai/1_kursas/1_semestras/1.azijos%20taut%C5%B3%20muzika/03%20-%20Tibetas%20-%20Lam%C5%B3%20giedojimas.mp3";
 String? _username;
 String? _password;
 bool isSkipped = false;
@@ -37,6 +39,7 @@ late var listConverted;
 //final plausible = Plausible("https://plausible.io", "gabalai.licejus.lt");
 
 final GlobalKey<State> _key = GlobalKey<State>();
+BuildContext? dabartinis;
 
 void setAnalytics(int value) async {
   final prefs = await SharedPreferences.getInstance();
@@ -62,37 +65,50 @@ void setAnalytics(int value) async {
 }
 
 void analyticsDialog() async {
-  while (_key.currentContext == null) {
-    await Future.delayed(Duration(milliseconds: 100));
+  while (dabartinis == null) {
+    await Future.delayed(const Duration(milliseconds: 100));
   }
-  if (_key.currentContext != null) {
+
+  if (dabartinis != null) {
     showDialog(
-        context: _key.currentContext!,
+        context: dabartinis!,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Sutikimas'),
+            title: const Text('Sutikimas'),
             content: SingleChildScrollView(
                 child: ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: 600),
+                    constraints: const BoxConstraints(maxWidth: 600),
                     child: Column(children: [
-                      Text(
-                          "Šioje programoje naudojamas plausible.io - duomenų privatumą užtikrinantis, atviro kodo svetainių ir programų analitikos įrankis. Paspaudus \"Sutinku\" įrankis bus įgalintas, o jo naudojimo galima  atsisakyti paspaudus \"Nesutinku\".\n"),
+                      const Text(
+                          "Šioje programoje naudojama Matomo Analytics - duomenų privatumą užtikrinantis, atviro kodo svetainių ir programų analitikos įrankis. Paspaudus \"Sutinku\" įrankis bus įgalintas, o jo naudojimo galima atsisakyti paspaudus \"Nesutinku\".\n"),
                       InkWell(
-                        child: Text(
-                          'plausible.io duomenų politika',
-                          style: TextStyle(color: Colors.blue),
+                        child: const Text(
+                          'Viešai prieinama analitikos versija',
+                          style: TextStyle(color: Color(0xff8484f2)),
                         ),
                         onTap: () async {
                           if (await canLaunchUrlString(
-                              "https://plausible.io/data-policy")) {
-                            launchUrlString("https://plausible.io/data-policy");
+                              "https://gabalai.licejus.lt/matomo/")) {
+                            launchUrlString("https://gabalai.licejus.lt/matomo/");
+                          }
+                        },
+                      ),
+                      InkWell(
+                        child: const Text(
+                          'Matomo duomenų politika',
+                          style: TextStyle(color: Color(0xff8484f2)),
+                        ),
+                        onTap: () async {
+                          if (await canLaunchUrlString(
+                              "https://matomo.org/privacy/")) {
+                            launchUrlString("https://matomo.org/privacy/");
                           }
                         },
                       ),
                     ]))),
             actions: <Widget>[
               TextButton(
-                child: Text('Nesutinku'),
+                child: const Text('Nesutinku'),
                 onPressed: () {
 
                   MatomoTracker.instance.setOptOut(optout: true);
@@ -101,7 +117,7 @@ void analyticsDialog() async {
                 },
               ),
               TextButton(
-                child: Text('Sutinku'),
+                child: const Text('Sutinku'),
                 onPressed: () {
 
                   MatomoTracker.instance.setOptOut(optout: false);
@@ -113,7 +129,6 @@ void analyticsDialog() async {
           );
         });
   }
-  ;
 }
 
 Future<void> _setSkipped(bool bool1) async {
@@ -133,27 +148,108 @@ Future<String> loadGpl() async {
       .then((value) => value);
 }
 
+Future<String> loadVersion() async {
+  return rootBundle
+      .loadString('assets/data/newversion')
+      .then((value) => value);
+}
+
+Future<String> loadStringFromWebFile() async {
+  final response =
+  await http.get(Uri.parse("$tsgurl/assets/assets/data/newversion"));
+  if (response.statusCode == 200) {
+    return response.body;
+  } else {
+    return "0";
+  }
+}
+
+Future<String> loadChangelog() async {
+  final response =
+  await http.get(Uri.parse("$tsgurl/assets/assets/data/changelog.txt"));
+  if (response.statusCode == 200) {
+    return response.body;
+  } else {
+    return "Pakeitimų sąrašo gavimo klaida.";
+  }
+}
+
+void checkUpdates(BuildContext context) async {
+  if (!kIsWeb) {
+  ver = double.parse(await loadVersion());
+  final prefs = await SharedPreferences.getInstance();
+  double skippedVersion=prefs.getDouble('skippedVersion') ?? 0;
+  double newver = double.parse(await loadStringFromWebFile());
+    if (ver < newver && newver != skippedVersion) {
+      String changelog = await loadChangelog();
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Prieinamas atnaujinimas'),
+            content: SingleChildScrollView(
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(changelog),
+                      const Padding(
+                        padding: EdgeInsets.all(10.0),
+                      ),
+                      ElevatedButton(
+                        child: const Text('Parsisiųsti'),
+                        onPressed: () async {
+                          if (Platform.isAndroid) {
+                            if (await canLaunchUrlString(androidurl)) {
+                              launchUrlString(androidurl,
+                                  mode: LaunchMode.externalApplication);
+                            }
+                          } else if (Platform.isWindows) {
+                            if (await canLaunchUrlString(windowsurl)) {
+                              launchUrlString(windowsurl,
+                                  mode: LaunchMode.externalApplication);
+                            }
+                          }
+                        },
+                      ),
+                    ])),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('Praleisti šią versiją'),
+                onPressed: () {
+                  prefs.setDouble('skippedVersion', newver);
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: const Text('Uždaryti'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+}
+
+
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   addLicences();
 
   final prefs = await SharedPreferences.getInstance();
   final savedThemeMode = await AdaptiveTheme.getThemeMode();
-  if (savedThemeMode == AdaptiveThemeMode.light)
+  if (savedThemeMode == AdaptiveThemeMode.light) {
     _isDarkMode = false;
-  else
+  } else {
     _isDarkMode = true;
-  analyticsEnabled = prefs.getInt('analytics') ?? -1;
-  if (analyticsEnabled == -1) {
-
-    MatomoTracker.instance.setOptOut(optout: true);
-    analyticsDialog();
-  } else if (analyticsEnabled == 1) {
-    await MatomoTracker.instance.initialize(
-      siteId: 1,
-      url: 'https://gabalai.licejus.lt/matomo/matomo.php',
-    );
   }
+
+  runApp(const MyApp());
+
 
   _username = prefs.getString('username');
   _password = prefs.getString('password');
@@ -161,10 +257,10 @@ void main() async {
   if (_username != null) {
     isSaved = true;
     //nuorodų sąrašo failo iššifravimas, "authorization header" generavimas
-    var key = _username! + ":" + _password! + "29806657059681125";
+    var key = "${_username!}:${_password!}29806657059681125";
     Codec<String, String> stringToBase64 = utf8.fuse(base64);
-    var bas64 = stringToBase64.encode(_username! + ":" + _password!);
-    basicAuth = 'Basic ' + bas64;
+    var bas64 = stringToBase64.encode("${_username!}:${_password!}");
+    basicAuth = 'Basic $bas64';
 
     var encryptedFile = await loadAsset();
     final akey = enc.Key.fromUtf8(key);
@@ -174,12 +270,29 @@ void main() async {
     decrypted = encrypter.decrypt(encrypted, iv: iv);
     listConverted = json.decode(decrypted);
   }
+
+  if(Html.window.navigator.doNotTrack == '1') {
+    setAnalytics(0);
+  }
+  else{
+    analyticsEnabled = prefs.getInt('analytics') ?? -1;
+    if (analyticsEnabled == -1) {
+      MatomoTracker.instance.setOptOut(optout: true);
+      analyticsDialog();
+    } else if (analyticsEnabled == 1) {
+      await MatomoTracker.instance.initialize(
+        siteId: 1,
+        url: 'https://gabalai.licejus.lt/matomo/matomo.php',
+      );
+    }}
+
   gplver = await loadGpl();
 
-  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return AdaptiveTheme(
@@ -237,7 +350,7 @@ class MyApp extends StatelessWidget {
         builder: (theme, darkTheme) => MaterialApp(
               title: 'GabalAI',
               //jeigu yra išsaugoti prisijungimo duomenys, einam tiesiai į HomePage
-              home: !isSaved & !isSkipped ? LoginPage() : HomePage(),
+              home: !isSaved & !isSkipped ? const LoginPage() : const HomePage(),
               theme: theme,
               darkTheme: darkTheme,
             ));
@@ -246,6 +359,8 @@ class MyApp extends StatelessWidget {
 
 //prisijungimo puslapis
 class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
   @override
   _LoginPageState createState() => _LoginPageState();
 }
@@ -260,6 +375,14 @@ class _LoginPageState extends State<LoginPage> {
   bool _usernameValid = false;
   bool _passwordValid = false;
 
+  @override
+  void initState() {
+    super.initState();
+    checkUpdates(context);
+    dabartinis=context;
+  }
+
+
   //kopijuota iš kito class... negerai
   List<Widget> mygtukai(BuildContext context) {
     return [
@@ -267,13 +390,13 @@ class _LoginPageState extends State<LoginPage> {
         Tooltip(
           message: "Nuoroda į web versiją",
           child: IconButton(
-              icon: Icon(Icons.link),
+              icon: const Icon(Icons.link),
               onPressed: () {
                 showDialog(
                     context: context,
                     builder: (BuildContext context) {
                       return AlertDialog(
-                        title: Text('Web versija: ${tsgurl}'),
+                        title: Text('Web versija: $tsgurl'),
                         content: SingleChildScrollView(
                             child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -289,11 +412,11 @@ class _LoginPageState extends State<LoginPage> {
                                     size: 200,
                                   ),
                                 )),
-                            Padding(
+                            const Padding(
                               padding: EdgeInsets.all(5.0),
                             ),
                             ElevatedButton(
-                              child: Text('Eiti'),
+                              child: const Text('Eiti'),
                               onPressed: () async {
                                 if (await canLaunchUrlString(tsgurl)) {
                                   launchUrlString(tsgurl,
@@ -305,7 +428,7 @@ class _LoginPageState extends State<LoginPage> {
                         )),
                         actions: <Widget>[
                           TextButton(
-                            child: Text('OK'),
+                            child: const Text('OK'),
                             onPressed: () {
                               Navigator.of(context).pop();
                             },
@@ -319,13 +442,13 @@ class _LoginPageState extends State<LoginPage> {
         Tooltip(
           message: 'Android versijos parsisiuntimas',
           child: IconButton(
-              icon: Icon(Icons.android),
+              icon: const Icon(Icons.android),
               onPressed: () {
                 showDialog(
                     context: context,
                     builder: (BuildContext context) {
                       return AlertDialog(
-                        title: Text('Android programa'),
+                        title: const Text('Android programa'),
                         content: SingleChildScrollView(
                           child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -341,11 +464,11 @@ class _LoginPageState extends State<LoginPage> {
                                         size: 200,
                                       ),
                                     )),
-                                Padding(
+                                const Padding(
                                   padding: EdgeInsets.all(5.0),
                                 ),
                                 ElevatedButton(
-                                  child: Text('Parsisiųsti'),
+                                  child: const Text('Parsisiųsti'),
                                   onPressed: () async {
                                     if (await canLaunchUrlString(androidurl)) {
                                       launchUrlString(androidurl,
@@ -357,7 +480,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         actions: <Widget>[
                           TextButton(
-                            child: Text('Uždaryti'),
+                            child: const Text('Uždaryti'),
                             onPressed: () {
                               Navigator.of(context).pop();
                             },
@@ -371,15 +494,15 @@ class _LoginPageState extends State<LoginPage> {
         Tooltip(
           message: "Windows versijos parsisiuntimas",
           child: IconButton(
-              icon: Icon(Icons.desktop_windows),
+              icon: const Icon(Icons.desktop_windows),
               onPressed: () {
                 showDialog(
                     context: context,
                     builder: (BuildContext context) {
                       return AlertDialog(
-                        title: Text('Windows programa'),
+                        title: const Text('Windows programa'),
                         content: ElevatedButton(
-                          child: Text('Parsisiųsti'),
+                          child: const Text('Parsisiųsti'),
                           onPressed: () async {
                             if (await canLaunchUrlString(windowsurl)) {
                               launchUrlString(windowsurl,
@@ -389,7 +512,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         actions: <Widget>[
                           TextButton(
-                            child: Text('OK'),
+                            child: const Text('OK'),
                             onPressed: () {
                               Navigator.of(context).pop();
                             },
@@ -403,8 +526,8 @@ class _LoginPageState extends State<LoginPage> {
         message: "Šviesaus/tamsaus UI keitimas",
         child: IconButton(
           icon: !_isDarkMode
-              ? Icon(Icons.brightness_3)
-              : Icon(Icons.brightness_5),
+              ? const Icon(Icons.brightness_3)
+              : const Icon(Icons.brightness_5),
           onPressed: () {
             setState(() {
               _isDarkMode = !_isDarkMode;
@@ -420,25 +543,26 @@ class _LoginPageState extends State<LoginPage> {
       Tooltip(
         message: "Informacija",
         child: IconButton(
-          icon: Icon(Icons.bug_report_rounded),
+          icon: const Icon(Icons.bug_report_rounded),
           onPressed: () {
             showDialog(
               context: context,
               builder: (BuildContext context) {
                 return AlertDialog(
-                  title: Text('Informacija'),
+                  title: const Text('Informacija'),
                   content: Text(
-                      'Licencija - GPL v3\nProgramos versija - ${ver}\nSukūrė Kristupas Lapinskas\n\nFunkcijų užklausos ir pranešimai apie trūkumus gali būti siunčiami GitHub arba kristupas.lapinskas@licejus.lt'),
+                      //'Licencija - GPL v3\nProgramos versija - $ver\nSukūrė Kristupas Lapinskas\n\nFunkcijų užklausos ir pranešimai apie trūkumus gali būti siunčiami GitHub arba kristupas.lapinskas@licejus.lt'),
+                      'Licencija - GPL v3\nProgramos versija - beta 1.1 (nedaug testuota, stabili versija gabalai.licejus.lt/old)\nSukūrė Kristupas Lapinskas\n\nFunkcijų užklausos ir pranešimai apie trūkumus gali būti siunčiami GitHub arba kristupas.lapinskas@licejus.lt'),
                   actions: <Widget>[
                     TextButton(
-                      child: Text('GPL v3'),
+                      child: const Text('GPL v3'),
                       onPressed: () {
                         {
                           showDialog(
                               context: context,
                               builder: (BuildContext context) {
                                 return AlertDialog(
-                                  title: Text('GPL v3'),
+                                  title: const Text('GPL v3'),
                                   content: SingleChildScrollView(
                                       child: Text(gplver)),
                                   actions: [
@@ -446,7 +570,7 @@ class _LoginPageState extends State<LoginPage> {
                                         onPressed: () {
                                           Navigator.of(context).pop();
                                         },
-                                        child: Text("OK"))
+                                        child: const Text("OK"))
                                   ],
                                 );
                               });
@@ -454,19 +578,19 @@ class _LoginPageState extends State<LoginPage> {
                       },
                     ),
                     TextButton(
-                      child: Text('Kitos licencijos'),
+                      child: const Text('Kitos licencijos'),
                       onPressed: () {
                         showLicensePage(
                             context: context,
                             applicationIcon:
-                                ImageIcon(AssetImage("assets/data/icon.png")),
+                                const ImageIcon(AssetImage("assets/data/icon.png")),
                             applicationLegalese:
                                 "dirbtinis intelektas programėlėje nenaudojamas",
                         );
                       },
                     ),
                     TextButton(
-                      child: Text('GitHub'),
+                      child: const Text('GitHub'),
                       onPressed: () async {
                         if (await canLaunchUrlString(githuburl)) {
                           launchUrlString(githuburl,
@@ -475,7 +599,7 @@ class _LoginPageState extends State<LoginPage> {
                       },
                     ),
                     TextButton(
-                      child: Text('OK'),
+                      child: const Text('OK'),
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
@@ -495,17 +619,17 @@ class _LoginPageState extends State<LoginPage> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Neteisingi prisijungimo duomenys'),
+            title: const Text('Neteisingi prisijungimo duomenys'),
             content: kDebugMode
-                ? SingleChildScrollView(
+                ? const SingleChildScrollView(
                     child: Text(
                         "Jeigu nežinote library.licejus.lt prisijungimo duomenų, yra galimybė įkelti savo aplanką praleidžiant prisijungimą, paspaudžiant rodyklę viršuje."))
-                : SingleChildScrollView(
+                : const SingleChildScrollView(
                     child: Text(
                         "Atkreipkite dėmesį, kad reikalingi ne asmeniniai, o library.licejus.lt prisijungimo duomenys.")),
             actions: <Widget>[
               TextButton(
-                child: Text('OK'),
+                child: const Text('OK'),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
@@ -528,10 +652,10 @@ class _LoginPageState extends State<LoginPage> {
       _passwordValid = _passwordController.text.isNotEmpty;
     });
     if (_usernameValid && _passwordValid) {
-      var key = _username! + ":" + _password! + "29806657059681125";
+      var key = "${_username!}:${_password!}29806657059681125";
       Codec<String, String> stringToBase64 = utf8.fuse(base64);
-      var bas64 = stringToBase64.encode(_username! + ":" + _password!);
-      basicAuth = 'Basic ' + bas64;
+      var bas64 = stringToBase64.encode("${_username!}:${_password!}");
+      basicAuth = 'Basic $bas64';
       var encryptedFile = await loadAsset();
       final akey = enc.Key.fromUtf8(key);
       final iv = enc.IV.fromLength(16);
@@ -540,7 +664,6 @@ class _LoginPageState extends State<LoginPage> {
         final encrypted = enc.Encrypted.fromBase64(encryptedFile);
         decrypted = encrypter.decrypt(encrypted, iv: iv);
         if (decrypted[0] != "{") {
-          print("a");
           failAuthDialog();
         } else {
           final prefs = await SharedPreferences.getInstance();
@@ -552,7 +675,7 @@ class _LoginPageState extends State<LoginPage> {
           isSkipped = false;
           //Navigator.of(context).pop();
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (context) => HomePage(),
+            builder: (context) => const HomePage(),
           ));
         }
       } catch (err) {
@@ -566,7 +689,7 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
         key: _key.currentContext == null ? _key : null,
         appBar: AppBar(
-            title: Tooltip(
+            title: const Tooltip(
                 message: "library.licejus.lt prisijungimas",
                 child: Text('library.licejus.lt prisijungimas')),
             actions: kDebugMode
@@ -576,15 +699,15 @@ class _LoginPageState extends State<LoginPage> {
                           message: "Praleisti",
                           child: IconButton(
                               icon:
-                                  Icon(Icons.subdirectory_arrow_right_rounded),
+                                  const Icon(Icons.subdirectory_arrow_right_rounded),
                               onPressed: () {
                                 showDialog(
                                     context: context,
                                     builder: (BuildContext context) {
                                       return AlertDialog(
                                         title:
-                                            Text('Ar tikrai norite praleisti?'),
-                                        content: SingleChildScrollView(
+                                            const Text('Ar tikrai norite praleisti?'),
+                                        content: const SingleChildScrollView(
                                             child: Text(
                                                 "Praleidus prisijungimą nebus pasiekiami library.licejus.lt kūriniai, juos reikės įkelti iš savo įrenginio. Vėlesnis grįžimas į prisijungimo langą galimas.")),
                                         actions: [
@@ -596,15 +719,15 @@ class _LoginPageState extends State<LoginPage> {
                                                 Navigator.of(context)
                                                     .push(MaterialPageRoute(
                                                   builder: (context) =>
-                                                      HomePage(),
+                                                      const HomePage(),
                                                 ));
                                               },
-                                              child: Text("Suprantu")),
+                                              child: const Text("Suprantu")),
                                           TextButton(
                                               onPressed: () {
                                                 Navigator.of(context).pop();
                                               },
-                                              child: Text("Grįžti"))
+                                              child: const Text("Grįžti"))
                                         ],
                                       );
                                     });
@@ -618,12 +741,12 @@ class _LoginPageState extends State<LoginPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Container(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SizedBox(
                         width: MediaQuery.of(context).size.width * 0.8,
                         child: TextFormField(
                           controller: _usernameController,
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             labelText: 'Prisijungimo vardas',
                           ),
                           validator: (value) {
@@ -637,12 +760,12 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Container(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SizedBox(
                         width: MediaQuery.of(context).size.width * 0.8,
                         child: TextFormField(
                           controller: _passwordController,
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             labelText: 'Slaptažodis',
                           ),
                           validator: (value) {
@@ -657,12 +780,12 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     ElevatedButton(
                       onPressed: _handleContinuePress,
-                      child: Text('Tęsti'),
+                      child: const Text('Tęsti'),
                     ),
-                    Padding(padding: EdgeInsets.all(5.0)),
+                    const Padding(padding: EdgeInsets.all(5.0)),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 20.0),
-                      child: Center(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: const Center(
                         child: kIsWeb
                             ? Text(
                                 "Naršyklės versijoje šiuos prisijungimus reikės pakartotinai įvesti",
@@ -677,6 +800,8 @@ class _LoginPageState extends State<LoginPage> {
 }
 
 class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -694,7 +819,6 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
         'app_debug': kDebugMode ? 'debug' : 'release',
       });*/
 
-  @override
   //kopijuota tas pats į kitą state... negerai
   List<Widget> mygtukai(BuildContext context) {
     return [
@@ -702,13 +826,13 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
         Tooltip(
           message: "Nuoroda į web versiją",
           child: IconButton(
-              icon: Icon(Icons.link),
+              icon: const Icon(Icons.link),
               onPressed: () {
                 showDialog(
                     context: context,
                     builder: (BuildContext context) {
                       return AlertDialog(
-                        title: Text('Web versija: ${tsgurl}'),
+                        title: Text('Web versija: $tsgurl'),
                         content: SingleChildScrollView(
                             child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -724,11 +848,11 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
                                     size: 200,
                                   ),
                                 )),
-                            Padding(
+                            const Padding(
                               padding: EdgeInsets.all(5.0),
                             ),
                             ElevatedButton(
-                              child: Text('Eiti'),
+                              child: const Text('Eiti'),
                               onPressed: () async {
                                 if (await canLaunchUrlString(tsgurl)) {
                                   launchUrlString(tsgurl,
@@ -740,7 +864,7 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
                         )),
                         actions: <Widget>[
                           TextButton(
-                            child: Text('OK'),
+                            child: const Text('OK'),
                             onPressed: () {
                               Navigator.of(context).pop();
                             },
@@ -754,13 +878,13 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
         Tooltip(
           message: 'Android versijos parsisiuntimas',
           child: IconButton(
-              icon: Icon(Icons.android),
+              icon: const Icon(Icons.android),
               onPressed: () {
                 showDialog(
                     context: context,
                     builder: (BuildContext context) {
                       return AlertDialog(
-                        title: Text('Android programa'),
+                        title: const Text('Android programa'),
                         content: SingleChildScrollView(
                           child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -776,11 +900,11 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
                                         size: 200,
                                       ),
                                     )),
-                                Padding(
+                                const Padding(
                                   padding: EdgeInsets.all(5.0),
                                 ),
                                 ElevatedButton(
-                                  child: Text('Parsisiųsti'),
+                                  child: const Text('Parsisiųsti'),
                                   onPressed: () async {
                                     if (await canLaunchUrlString(androidurl)) {
                                       launchUrlString(androidurl,
@@ -792,7 +916,7 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
                         ),
                         actions: <Widget>[
                           TextButton(
-                            child: Text('Uždaryti'),
+                            child: const Text('Uždaryti'),
                             onPressed: () {
                               Navigator.of(context).pop();
                             },
@@ -806,15 +930,15 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
         Tooltip(
           message: "Windows versijos parsisiuntimas",
           child: IconButton(
-              icon: Icon(Icons.desktop_windows),
+              icon: const Icon(Icons.desktop_windows),
               onPressed: () {
                 showDialog(
                     context: context,
                     builder: (BuildContext context) {
                       return AlertDialog(
-                        title: Text('Windows programa'),
+                        title: const Text('Windows programa'),
                         content: ElevatedButton(
-                          child: Text('Parsisiųsti'),
+                          child: const Text('Parsisiųsti'),
                           onPressed: () async {
                             if (await canLaunchUrlString(windowsurl)) {
                               launchUrlString(windowsurl,
@@ -824,7 +948,7 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
                         ),
                         actions: <Widget>[
                           TextButton(
-                            child: Text('OK'),
+                            child: const Text('OK'),
                             onPressed: () {
                               Navigator.of(context).pop();
                             },
@@ -838,8 +962,8 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
         message: "Šviesaus/tamsaus UI keitimas",
         child: IconButton(
           icon: !_isDarkMode
-              ? Icon(Icons.brightness_3)
-              : Icon(Icons.brightness_5),
+              ? const Icon(Icons.brightness_3)
+              : const Icon(Icons.brightness_5),
           onPressed: () {
             setState(() {
               _isDarkMode = !_isDarkMode;
@@ -855,25 +979,26 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
       Tooltip(
         message: "Informacija",
         child: IconButton(
-          icon: Icon(Icons.bug_report_rounded),
+          icon: const Icon(Icons.bug_report_rounded),
           onPressed: () {
             showDialog(
               context: context,
               builder: (BuildContext context) {
                 return AlertDialog(
-                  title: Text('Informacija'),
+                  title: const Text('Informacija'),
                   content: Text(
-                      'Licencija - GPL v3\nProgramos versija - ${ver}\nSukūrė Kristupas Lapinskas\n\nFunkcijų užklausos ir pranešimai apie trūkumus gali būti siunčiami GitHub arba kristupas.lapinskas@licejus.lt'),
+                    //'Licencija - GPL v3\nProgramos versija - $ver\nSukūrė Kristupas Lapinskas\n\nFunkcijų užklausos ir pranešimai apie trūkumus gali būti siunčiami GitHub arba kristupas.lapinskas@licejus.lt'),
+                      'Licencija - GPL v3\nProgramos versija - beta 1.1 (nedaug testuota, stabili versija gabalai.licejus.lt/old)\nSukūrė Kristupas Lapinskas\n\nFunkcijų užklausos ir pranešimai apie trūkumus gali būti siunčiami GitHub arba kristupas.lapinskas@licejus.lt'),
                   actions: <Widget>[
                     TextButton(
-                      child: Text('GPL v3'),
+                      child: const Text('GPL v3'),
                       onPressed: () {
                         {
                           showDialog(
                               context: context,
                               builder: (BuildContext context) {
                                 return AlertDialog(
-                                  title: Text('GPL v3'),
+                                  title: const Text('GPL v3'),
                                   content: SingleChildScrollView(
                                       child: Text(gplver)),
                                   actions: [
@@ -881,7 +1006,7 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
                                         onPressed: () {
                                           Navigator.of(context).pop();
                                         },
-                                        child: Text("OK"))
+                                        child: const Text("OK"))
                                   ],
                                 );
                               });
@@ -889,19 +1014,19 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
                       },
                     ),
                     TextButton(
-                      child: Text('Kitos licencijos'),
+                      child: const Text('Kitos licencijos'),
                       onPressed: () {
                         showLicensePage(
                             context: context,
                             applicationIcon:
-                                ImageIcon(AssetImage("assets/data/icon.png")),
+                                const ImageIcon(AssetImage("assets/data/icon.png")),
                             applicationLegalese:
                                 "dirbtinis intelektas programėlėje nenaudojamas");
                       },
                     ),
 
                     TextButton(
-                      child: Text('GitHub'),
+                      child: const Text('GitHub'),
                       onPressed: () async {
                         if (await canLaunchUrlString(githuburl)) {
                           launchUrlString(githuburl,
@@ -910,7 +1035,7 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
                       },
                     ),
                     TextButton(
-                      child: Text('OK'),
+                      child: const Text('OK'),
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
@@ -925,87 +1050,18 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
     ];
   }
 
-  Future<String> loadAsset() async {
-    return rootBundle
-        .loadString('assets/data/newversion')
-        .then((value) => value);
-  }
 
-  Future<String> loadStringFromWebFile() async {
-    final response =
-        await http.get(Uri.parse(tsgurl + "/assets/assets/data/newversion"));
-    if (response.statusCode == 200) {
-      return response.body;
-    } else {
-      return "0";
-    }
-  }
 
-  Future<String> loadChangelog() async {
-    final response =
-        await http.get(Uri.parse(tsgurl + "/assets/assets/data/changelog.txt"));
-    if (response.statusCode == 200) {
-      return response.body;
-    } else {
-      return "Pakeitimų sąrašo gavimo klaida.";
-    }
-  }
 
-  void checkUpdates() async {
-    ver = double.parse(await loadAsset());
-    String changelog = await loadChangelog();
-    if (!kIsWeb) {
-      if (ver < double.parse(await loadStringFromWebFile())) {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('Prieinamas atnaujinimas'),
-              content: SingleChildScrollView(
-                  child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                    Text(changelog),
-                    Padding(
-                      padding: EdgeInsets.all(10.0),
-                    ),
-                    ElevatedButton(
-                      child: Text('Parsisiųsti'),
-                      onPressed: () async {
-                        if (Platform.isAndroid) {
-                          if (await canLaunchUrlString(androidurl)) {
-                            launchUrlString(androidurl,
-                                mode: LaunchMode.externalApplication);
-                          }
-                        } else if (Platform.isWindows) {
-                          if (await canLaunchUrlString(windowsurl)) {
-                            launchUrlString(windowsurl,
-                                mode: LaunchMode.externalApplication);
-                          }
-                        }
-                      },
-                    ),
-                  ])),
-              actions: <Widget>[
-                TextButton(
-                  child: Text('Ignoruoti'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
-            );
-          },
-        );
-      }
-    }
-  }
 
+
+  @override
   void initState() {
     super.initState();
     isSkipped ? null : loadlicejus();
-    checkUpdates();
+    checkUpdates(context);
     _loadSelection();
+    dabartinis=context;
   }
 
   Future<void> loadlicejus() async {
@@ -1021,24 +1077,25 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
       await tempplayer.setAudioSource(AudioSource.uri(Uri.parse(testurl),
           headers: {'Authorization': basicAuth}));
     } catch (e) {
+      //šis dialogas naudojamas ir kitur, reikėtų jį perkelti į vieną funkciją (bet tai padarius kažkodėl kartojama funkcija nelaukiant mygtukų paspaudimo)
       showDialog(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text('Nepasiekiami muzikos failai'),
+              title: const Text('Nepasiekiami muzikos failai'),
               content: SingleChildScrollView(
                   child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                    Text(
+                    const Text(
                       'Spauskite "Bandyti vėl" arba',
                       style: TextStyle(fontSize: 20),
                     ),
                     if (kIsWeb)
                       InkWell(
-                        child: Text(
-                          'Atidarykite library.licejus.lt, prisijunkite ir spauskite "Bandyti vėl"',
-                          style: TextStyle(color: Colors.blue, fontSize: 18),
+                        child: const Text(
+                          'atidarykite library.licejus.lt, prisijunkite ir spauskite "Bandyti vėl"',
+                          style: TextStyle(color: Color(0xff8484f2), fontSize: 20),
                         ),
                         onTap: () async {
                           if (await canLaunchUrlString(
@@ -1048,21 +1105,21 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
                         },
                       ),
                     if (kIsWeb)
-                      Text(
+                      const Text(
                           "\nŠią spragą galima apeiti naudojant Android arba Windows programas, kurias galima parsisiųsti pagrindinio puslapio viršuje.\n\n"),
-                    Text("Kiti problemos sprendimo būdai:"),
-                    Text(
+                    const Text("Kiti problemos sprendimo būdai:"),
+                    const Text(
                         '1) Patikrinti, ar pasiekiamas interneto ryšys\n2) Pabandyti programą kitame tinkle/įrenginyje'),
                   ])),
               actions: <Widget>[
                 TextButton(
-                  child: Text('Ignoruoti'),
+                  child: const Text('Ignoruoti'),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
                 ),
                 TextButton(
-                  child: Text('Bandyti vėl'),
+                  child: const Text('Bandyti vėl'),
                   onPressed: () {
                     loadlicejus();
                     Navigator.of(context).pop();
@@ -1099,14 +1156,14 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
               ? Tooltip(
                   message: "Grįžti į prisijungimą",
                   child: IconButton(
-                      icon: Icon(Icons.arrow_back),
+                      icon: const Icon(Icons.arrow_back),
                       onPressed: () {
                         Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => LoginPage(),
+                          builder: (context) => const LoginPage(),
                         ));
                       }))
               : null,
-          title: Tooltip(
+          title: const Tooltip(
               message: "(dirbtinis intelektas programėlėje nenaudojamas)",
               child: Text('GabalAI')),
           actions: mygtukai(context),
@@ -1115,18 +1172,18 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Padding(
+              const Padding(
                 padding: EdgeInsets.all(0.0),
                 child: Text('Sveiki!', style: TextStyle(fontSize: 24.0)),
               ),
-              Padding(
+              const Padding(
                 padding: EdgeInsets.all(8.0),
                 child: Text(''),
               ),
               Padding(
-                padding: EdgeInsets.all(10.0),
+                padding: const EdgeInsets.all(10.0),
                 child: DropdownButton<String>(
-                  hint: Text('Pasirinkti kursą'),
+                  hint: const Text('Pasirinkti kursą'),
                   value: _selectedCourse,
                   onChanged: (String? newValue) {
                     setState(() {
@@ -1147,9 +1204,9 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16.0),
                 child: DropdownButton<String>(
-                  hint: Text('Pasirinkti pusmetį'),
+                  hint: const Text('Pasirinkti pusmetį'),
                   value: _selectedSemester,
                   onChanged: (String? newValue) {
                     setState(() {
@@ -1166,9 +1223,8 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16.0),
                 child: ElevatedButton(
-                  child: Text('Tęsti'),
                   onPressed: _selectedCourse == null ||
                           _selectedSemester == null ||
                           isSkipped
@@ -1188,13 +1244,15 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
                             ),
                           );
                         },
+                  child: const Text('Tęsti'),
                 ),
               ),
             ],
           ),
         ));
   }
-
+  @override
+  String get traceName => 'Home';
   @override
   String get traceTitle => "GabalAI";
 }
