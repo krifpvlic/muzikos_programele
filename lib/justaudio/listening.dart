@@ -4,15 +4,20 @@ import 'package:just_audio/just_audio.dart';
 import 'common.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:path/path.dart' as p;
-import 'package:matomo_tracker/matomo_tracker.dart';
+import '../matomo/matomo_tracker.dart';
+import '../localfolder.dart';
 String uri1 = "https://library.licejus.lt";
+
+
 
 class ListPlay extends StatefulWidget {
   final List<String> linkList;
   final String username;
   final String password;
   final String basicAuth;
-  const ListPlay({Key? key, required this.linkList,required this.basicAuth,required this.username,required this.password}) : super(key: key);
+  final bool local;
+  final fileHandle;
+  const ListPlay({Key? key, required this.linkList,required this.basicAuth,required this.username,required this.password, required this.local, this.fileHandle}) : super(key: key);
 
   @override
   ListPlayState createState() => ListPlayState();
@@ -68,6 +73,8 @@ class ListPlayState extends State<ListPlay> with WidgetsBindingObserver, Traceab
       _player.stop();
     }
   }
+  
+  
 
   /// Collects the data useful for displaying in a seek bar, using a handy
   /// feature of rx_dart to combine the 3 streams of interest into one.
@@ -100,9 +107,9 @@ class ListPlayState extends State<ListPlay> with WidgetsBindingObserver, Traceab
               setState(() {
                 _selectedIndex = value as int;
               });
-              await _player.setAudioSource(AudioSource.uri(
+              !widget.local ? await _player.setAudioSource(AudioSource.uri(
                   Uri.parse("${uri1}${widget.linkList[_selectedIndex]}"),
-                  headers: {'Authorization': widget.basicAuth}));
+                  headers: {'Authorization': widget.basicAuth})) : await _player.setAudioSource(MyCustomSource(widget.fileHandle.readAs)); //TODO: implement local file reading
               //setState(() {
               //  duration = 0 as Duration;
               //});

@@ -1,6 +1,7 @@
-import 'dart:html' as Html;
-
-import 'package:matomo_tracker/matomo_tracker.dart';
+//to test - if matomo works on first launch; check if matomo license is shown
+//add selection for kuriniai
+import 'package:universal_html/html.dart' as Html;
+import 'matomo/matomo_tracker.dart';
 import 'dart:io';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
@@ -17,6 +18,7 @@ import 'package:http/http.dart' as http;
 import 'package:encrypt/encrypt.dart' as enc;
 import 'dart:convert';
 import 'addlicences.dart';
+import 'localfolder.dart';
 
 double ver = 0;
 String uri1 = "https://library.licejus.lt";
@@ -36,9 +38,7 @@ bool _isDarkMode = true;
 int analyticsEnabled = 0;
 late var decrypted;
 late var listConverted;
-//final plausible = Plausible("https://plausible.io", "gabalai.licejus.lt");
 
-final GlobalKey<State> _key = GlobalKey<State>();
 BuildContext? dabartinis;
 
 void setAnalytics(int value) async {
@@ -58,9 +58,8 @@ void setAnalytics(int value) async {
     await MatomoTracker.instance.initialize(
       siteId: 1,
       url: 'https://gabalai.licejus.lt/matomo/matomo.php',
+      cookieless: true,
     );
-
-    //html.window.localStorage['plausible_ignore']='false';
   }
 }
 
@@ -111,7 +110,7 @@ void analyticsDialog() async {
                 child: const Text('Nesutinku'),
                 onPressed: () {
 
-                  MatomoTracker.instance.setOptOut(optout: true);
+                  MatomoTracker.instance.setOptOut(optOut: true);
                   setAnalytics(0);
                   Navigator.of(context).pop();
                 },
@@ -120,7 +119,7 @@ void analyticsDialog() async {
                 child: const Text('Sutinku'),
                 onPressed: () {
 
-                  MatomoTracker.instance.setOptOut(optout: false);
+                  MatomoTracker.instance.setOptOut(optOut: false);
                   setAnalytics(1);
                   Navigator.of(context).pop();
                 },
@@ -248,6 +247,23 @@ void main() async {
     _isDarkMode = true;
   }
 
+  if(Html.window.navigator.doNotTrack == '1') {
+    setAnalytics(0);
+  }
+  else{
+    analyticsEnabled = prefs.getInt('analytics') ?? -1;
+    if (analyticsEnabled == -1) {
+      //MatomoTracker.instance.setOptOut(optOut: true);
+      analyticsDialog();
+    } else if (analyticsEnabled == 1) {
+      await MatomoTracker.instance.initialize(
+        siteId: 1,
+        url: 'https://gabalai.licejus.lt/matomo/matomo.php',
+        cookieless: true,
+      );
+    }}
+
+
   runApp(const MyApp());
 
 
@@ -271,20 +287,6 @@ void main() async {
     listConverted = json.decode(decrypted);
   }
 
-  if(Html.window.navigator.doNotTrack == '1') {
-    setAnalytics(0);
-  }
-  else{
-    analyticsEnabled = prefs.getInt('analytics') ?? -1;
-    if (analyticsEnabled == -1) {
-      MatomoTracker.instance.setOptOut(optout: true);
-      analyticsDialog();
-    } else if (analyticsEnabled == 1) {
-      await MatomoTracker.instance.initialize(
-        siteId: 1,
-        url: 'https://gabalai.licejus.lt/matomo/matomo.php',
-      );
-    }}
 
   gplver = await loadGpl();
 
@@ -687,7 +689,6 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        key: _key.currentContext == null ? _key : null,
         appBar: AppBar(
             title: const Tooltip(
                 message: "library.licejus.lt prisijungimas",
@@ -719,7 +720,7 @@ class _LoginPageState extends State<LoginPage> {
                                                 Navigator.of(context)
                                                     .push(MaterialPageRoute(
                                                   builder: (context) =>
-                                                      const HomePage(),
+                                                      FolderSelect(),
                                                 ));
                                               },
                                               child: const Text("Suprantu")),
@@ -991,6 +992,12 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
                       'Licencija - GPL v3\nProgramos versija - beta 1.1 (nedaug testuota, stabili versija gabalai.licejus.lt/old)\nSukūrė Kristupas Lapinskas\n\nFunkcijų užklausos ir pranešimai apie trūkumus gali būti siunčiami GitHub arba kristupas.lapinskas@licejus.lt'),
                   actions: <Widget>[
                     TextButton(
+                      child: const Text('Analitikos pasirinkimas'),
+                      onPressed: () {
+                        analyticsDialog();
+                      },
+                    ),
+                    TextButton(
                       child: const Text('GPL v3'),
                       onPressed: () {
                         {
@@ -1150,7 +1157,6 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        key: _key.currentContext == null ? _key : null,
         appBar: AppBar(
           leading: isSkipped
               ? Tooltip(
@@ -1240,6 +1246,7 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
                                 semester: _selectedSemester!
                                     .replaceAll(RegExp(r'[^0-9]'), ''),
                                 listConverted: listConverted,
+                                local: false,
                               ),
                             ),
                           );

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:matomo_tracker/matomo_tracker.dart';
+import 'matomo/matomo_tracker.dart';
 import 'package:muzikos_programele/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'justaudio/listening.dart';
@@ -13,10 +13,12 @@ class DirectoryPage extends StatefulWidget {
   final String course;
   final String semester;
   final listConverted;
+  final bool local;
   DirectoryPage(
       {required this.course,
       required this.semester,
-      required this.listConverted});
+      required this.listConverted,
+      required this.local});
 
   @override
   _DirectoryPageState createState() => _DirectoryPageState();
@@ -43,7 +45,7 @@ class _DirectoryPageState extends State<DirectoryPage> with TraceableClientMixin
             filePath.endsWith('.flac') ||
             filePath.endsWith('.aac'))
         .toList();
-    _saveCurrentState();
+    //_saveCurrentState();
   }
 
   void showInfo(double infoLevel){
@@ -90,8 +92,8 @@ class _DirectoryPageState extends State<DirectoryPage> with TraceableClientMixin
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text(
-              "${widget.course} kurso ${widget.semester} pusmečio klausymas"),
+          title: !widget.local ? Text(
+              "${widget.course} kurso ${widget.semester} pusmečio klausymas") : Text("Pasirinktas aplankalas"),
         ),
         body: Center(
           child: Column(
@@ -140,7 +142,8 @@ class _DirectoryPageState extends State<DirectoryPage> with TraceableClientMixin
                                   linkList: partLinkList,
                                   basicAuth: basicAuth,
                                   username: _username,
-                                  password: _password)),
+                                  password: _password,
+                                  local: widget.local)),
                         );
                       },
                 child: Text("Klausymas"),

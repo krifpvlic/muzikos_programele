@@ -8,7 +8,7 @@ import 'package:audio_session/audio_session.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:matomo_tracker/matomo_tracker.dart';
+import '../matomo/matomo_tracker.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'common.dart';
 import 'package:rxdart/rxdart.dart';
