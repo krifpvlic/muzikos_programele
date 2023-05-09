@@ -1,7 +1,7 @@
 //to test - if matomo works on first launch; check if matomo license is shown
 //add selection for kuriniai
 import 'package:universal_html/html.dart' as Html;
-import 'matomo/matomo_tracker.dart';
+import 'package:matomo_tracker/matomo_tracker.dart';
 import 'dart:io';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
@@ -385,7 +385,7 @@ class _LoginPageState extends State<LoginPage> {
         Tooltip(
           message: "Nuoroda į web versiją",
           child: IconButton(
-              icon: const Icon(Icons.link),
+              icon: const Icon(Icons.link_rounded),
               onPressed: () {
                 showDialog(
                     context: context,
@@ -437,7 +437,7 @@ class _LoginPageState extends State<LoginPage> {
         Tooltip(
           message: 'Android versijos parsisiuntimas',
           child: IconButton(
-              icon: const Icon(Icons.android),
+              icon: const Icon(Icons.android_rounded),
               onPressed: () {
                 showDialog(
                     context: context,
@@ -489,7 +489,7 @@ class _LoginPageState extends State<LoginPage> {
         Tooltip(
           message: "Windows versijos parsisiuntimas",
           child: IconButton(
-              icon: const Icon(Icons.desktop_windows),
+              icon: const Icon(Icons.desktop_windows_rounded),
               onPressed: () {
                 showDialog(
                     context: context,
@@ -521,8 +521,8 @@ class _LoginPageState extends State<LoginPage> {
         message: "Šviesaus/tamsaus UI keitimas",
         child: IconButton(
           icon: !_isDarkMode
-              ? const Icon(Icons.brightness_3)
-              : const Icon(Icons.brightness_5),
+              ? const Icon(Icons.brightness_3_rounded)
+              : const Icon(Icons.brightness_5_rounded),
           onPressed: () {
             setState(() {
               _isDarkMode = !_isDarkMode;
@@ -547,7 +547,7 @@ class _LoginPageState extends State<LoginPage> {
                   title: const Text('Informacija'),
                   content: Text(
                       //'Licencija - GPL v3\nProgramos versija - $ver\nSukūrė Kristupas Lapinskas\n\nFunkcijų užklausos ir pranešimai apie trūkumus gali būti siunčiami GitHub arba kristupas.lapinskas@licejus.lt'),
-                      'Licencija - GPL v3\nProgramos versija - beta 1.1 (nedaug testuota, stabili versija gabalai.licejus.lt/old)\nSukūrė Kristupas Lapinskas\n\nFunkcijų užklausos ir pranešimai apie trūkumus gali būti siunčiami GitHub arba kristupas.lapinskas@licejus.lt'),
+                      'Licencija - GPL v3\nProgramos versija - beta 1.2\nStabili versija - gabalai.licejus.lt/old\nSukūrė Kristupas Lapinskas\n\nFunkcijų užklausos ir pranešimai apie trūkumus gali būti siunčiami GitHub arba kristupas.lapinskas@licejus.lt'),
                   actions: <Widget>[
                     TextButton(
                       child: const Text('Analitikos pasirinkimas'),
@@ -826,7 +826,7 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
         Tooltip(
           message: "Nuoroda į web versiją",
           child: IconButton(
-              icon: const Icon(Icons.link),
+              icon: const Icon(Icons.link_rounded),
               onPressed: () {
                 showDialog(
                     context: context,
@@ -878,7 +878,7 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
         Tooltip(
           message: 'Android versijos parsisiuntimas',
           child: IconButton(
-              icon: const Icon(Icons.android),
+              icon: const Icon(Icons.android_rounded),
               onPressed: () {
                 showDialog(
                     context: context,
@@ -930,7 +930,7 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
         Tooltip(
           message: "Windows versijos parsisiuntimas",
           child: IconButton(
-              icon: const Icon(Icons.desktop_windows),
+              icon: const Icon(Icons.desktop_windows_rounded),
               onPressed: () {
                 showDialog(
                     context: context,
@@ -962,8 +962,8 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
         message: "Šviesaus/tamsaus UI keitimas",
         child: IconButton(
           icon: !_isDarkMode
-              ? const Icon(Icons.brightness_3)
-              : const Icon(Icons.brightness_5),
+              ? const Icon(Icons.brightness_3_rounded)
+              : const Icon(Icons.brightness_5_rounded),
           onPressed: () {
             setState(() {
               _isDarkMode = !_isDarkMode;
@@ -988,7 +988,7 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
                   title: const Text('Informacija'),
                   content: Text(
                     //'Licencija - GPL v3\nProgramos versija - $ver\nSukūrė Kristupas Lapinskas\n\nFunkcijų užklausos ir pranešimai apie trūkumus gali būti siunčiami GitHub arba kristupas.lapinskas@licejus.lt'),
-                      'Licencija - GPL v3\nProgramos versija - beta 1.1 (nedaug testuota, stabili versija gabalai.licejus.lt/old)\nSukūrė Kristupas Lapinskas\n\nFunkcijų užklausos ir pranešimai apie trūkumus gali būti siunčiami GitHub arba kristupas.lapinskas@licejus.lt'),
+                      'Licencija - GPL v3\nProgramos versija - beta 1.2\nStabili versija - gabalai.licejus.lt/old\nSukūrė Kristupas Lapinskas\n\nFunkcijų užklausos ir pranešimai apie trūkumus gali būti siunčiami GitHub arba kristupas.lapinskas@licejus.lt'),
                   actions: <Widget>[
                     TextButton(
                       child: const Text('Analitikos pasirinkimas'),
@@ -1161,7 +1161,7 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
               ? Tooltip(
                   message: "Grįžti į prisijungimą",
                   child: IconButton(
-                      icon: const Icon(Icons.arrow_back),
+                      icon: const Icon(Icons.arrow_back_rounded),
                       onPressed: () {
                         Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => const LoginPage(),

@@ -8,7 +8,7 @@ import 'package:audio_session/audio_session.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
-import '../matomo/matomo_tracker.dart';
+import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'common.dart';
 import 'package:rxdart/rxdart.dart';
@@ -62,8 +62,8 @@ class LearningPlayState extends State<LearningPlay>
   var showControls = false;
   int queuePos = 0;
   bool okPressed = false;
-  bool over10 = false;
-
+  bool goalTracked = false;
+  int totalcorrect=0;
   String uri1 = "https://library.licejus.lt";
 
   Future<void> play(BuildContext context) async {
@@ -325,9 +325,10 @@ class LearningPlayState extends State<LearningPlay>
       } else {
         Navigator.of(context).pop();
       }
-      if (queuePos > 9 && !over10) {
+      totalcorrect++;
+      if(totalcorrect>(musicPiecesList.length/3) && totalcorrect>=7 && !goalTracked){
         MatomoTracker.instance.trackGoal(1);
-        over10 = true;
+        goalTracked = true;
       }
     }
 
@@ -427,11 +428,8 @@ class LearningPlayState extends State<LearningPlay>
               )
             : null,
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-        bottomNavigationBar: showControls
-            ? Column(mainAxisSize: MainAxisSize.min, children: [
-                BottomAppBar(
-                  child: SafeArea(
-                    child: Column(
+        bottomSheet: showControls
+            ? Column(mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -459,10 +457,10 @@ class LearningPlayState extends State<LearningPlay>
                           },
                         ),
                       ],
-                    ),
-                  ),
-                )
-              ])
+
+
+
+              )
             : null);
   }
 

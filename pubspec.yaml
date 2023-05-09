@@ -43,14 +43,13 @@ dependencies:
   http: ^0.13.5
   encrypt: ^5.0.1
   just_audio_windows: ^0.2.0
-  just_audio_mpv: ^0.1.6
-  flutter_launcher_icons: ^0.12.0
-  flex_color_scheme: ^6.1.2
+  flutter_launcher_icons: ^0.13.1
+  flex_color_scheme: ^7.0.5
   google_fonts: ^4.0.3
-  matomo_tracker: ^2.0.0
+  matomo_tracker: ^3.1.0
   universal_html: ^2.2.1
-  file_picker_cross: ^4.4.1
   file_system_access_api: ^1.1.0
+  file_picker_cross: ^4.4.1
 
 dev_dependencies:
   flutter_test:

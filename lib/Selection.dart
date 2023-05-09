@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'matomo/matomo_tracker.dart';
+import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:muzikos_programele/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'justaudio/listening.dart';

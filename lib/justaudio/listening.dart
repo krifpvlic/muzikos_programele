@@ -4,7 +4,7 @@ import 'package:just_audio/just_audio.dart';
 import 'common.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:path/path.dart' as p;
-import '../matomo/matomo_tracker.dart';
+import 'package:matomo_tracker/matomo_tracker.dart';
 import '../localfolder.dart';
 import '../globals.dart' as globals;
 
@@ -116,11 +116,12 @@ class ListPlayState extends State<ListPlay> with WidgetsBindingObserver, Traceab
           );
         },
       ),
-      bottomNavigationBar: Column(mainAxisSize: MainAxisSize.min, children: [
-        BottomAppBar(
-          child: Column(
+      bottomSheet:
+
+Column(mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
+
             children: [
               // Display play/pause button and volume/speed sliders.
               ControlButtons(_player),
@@ -141,8 +142,8 @@ class ListPlayState extends State<ListPlay> with WidgetsBindingObserver, Traceab
               ),
             ],
           ),
-        ),
-      ]),
+
+
     );
   }
   @override
