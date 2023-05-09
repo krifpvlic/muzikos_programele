@@ -19,16 +19,9 @@ import 'package:encrypt/encrypt.dart' as enc;
 import 'dart:convert';
 import 'addlicences.dart';
 import 'localfolder.dart';
+import 'globals.dart' as globals;
 
-double ver = 0;
-String uri1 = "https://library.licejus.lt";
 late String basicAuth;
-String githuburl = "https://github.com/krifpvlic/muzikos_programele";
-String tsgurl = "https://gabalai.licejus.lt";
-String windowsurl = "$tsgurl/gabalai_windows.zip";
-String androidurl = "$tsgurl/gabalai.apk";
-String testurl =
-    "$uri1/menai/1_kursas/1_semestras/1.azijos%20taut%C5%B3%20muzika/03%20-%20Tibetas%20-%20Lam%C5%B3%20giedojimas.mp3";
 String? _username;
 String? _password;
 bool isSkipped = false;
@@ -46,20 +39,10 @@ void setAnalytics(int value) async {
   prefs.setInt('analytics', value);
   analyticsEnabled = value;
   if (value == 1) {
-    /*if(kIsWeb){
-      html.ScriptElement script = new html.ScriptElement();
-      script.setAttribute('defer', '');
-      script.setAttribute('data-domain', 'gabalai.licejus.lt');
-      script.src = 'https://plausible.io/js/script.hash.js';
-      html.document.head?.append(script);
-    }
-      else{
-      plausible.enabled = true;}*/
-    await MatomoTracker.instance.initialize(
-      siteId: 1,
-      url: 'https://gabalai.licejus.lt/matomo/matomo.php',
-      cookieless: true,
-    );
+    MatomoTracker.instance.setOptOut(optOut: false);
+  }
+  if(value == 0) {
+    MatomoTracker.instance.setOptOut(optOut: true);
   }
 }
 
@@ -79,7 +62,7 @@ void analyticsDialog() async {
                     constraints: const BoxConstraints(maxWidth: 600),
                     child: Column(children: [
                       const Text(
-                          "Šioje programoje naudojama Matomo Analytics - duomenų privatumą užtikrinantis, atviro kodo svetainių ir programų analitikos įrankis. Paspaudus \"Sutinku\" įrankis bus įgalintas, o jo naudojimo galima atsisakyti paspaudus \"Nesutinku\".\n"),
+                          "Šioje programoje naudojama Matomo Analytics - duomenų privatumą užtikrinantis, atviro kodo svetainių ir programų analitikos įrankis. Paspaudus \"Sutinku\" įrankis bus įgalintas, o jo naudojimo galima atsisakyti paspaudus \"Nesutinku\".\n\nPasirinkimą galima pakeisti prisijungimo arba kurso pasirinkimo lange paspaudus viršuje dešinėje esantį informacijos mygtuką ir išlindusiame lange paspaudus \"Analitikos pasirinkimas\".\n"),
                       InkWell(
                         child: const Text(
                           'Viešai prieinama analitikos versija',
@@ -155,7 +138,7 @@ Future<String> loadVersion() async {
 
 Future<String> loadStringFromWebFile() async {
   final response =
-  await http.get(Uri.parse("$tsgurl/assets/assets/data/newversion"));
+  await http.get(Uri.parse("${globals.websiteUrl}/assets/assets/data/newversion"));
   if (response.statusCode == 200) {
     return response.body;
   } else {
@@ -165,7 +148,7 @@ Future<String> loadStringFromWebFile() async {
 
 Future<String> loadChangelog() async {
   final response =
-  await http.get(Uri.parse("$tsgurl/assets/assets/data/changelog.txt"));
+  await http.get(Uri.parse("${globals.websiteUrl}/assets/assets/data/changelog.txt"));
   if (response.statusCode == 200) {
     return response.body;
   } else {
@@ -175,6 +158,7 @@ Future<String> loadChangelog() async {
 
 void checkUpdates(BuildContext context) async {
   if (!kIsWeb) {
+  double ver = 0;
   ver = double.parse(await loadVersion());
   final prefs = await SharedPreferences.getInstance();
   double skippedVersion=prefs.getDouble('skippedVersion') ?? 0;
@@ -198,13 +182,13 @@ void checkUpdates(BuildContext context) async {
                         child: const Text('Parsisiųsti'),
                         onPressed: () async {
                           if (Platform.isAndroid) {
-                            if (await canLaunchUrlString(androidurl)) {
-                              launchUrlString(androidurl,
+                            if (await canLaunchUrlString(globals.androidDlUrl)) {
+                              launchUrlString(globals.androidDlUrl,
                                   mode: LaunchMode.externalApplication);
                             }
                           } else if (Platform.isWindows) {
-                            if (await canLaunchUrlString(windowsurl)) {
-                              launchUrlString(windowsurl,
+                            if (await canLaunchUrlString(globals.windowsDlUrl)) {
+                              launchUrlString(globals.windowsDlUrl,
                                   mode: LaunchMode.externalApplication);
                             }
                           }
@@ -247,21 +231,30 @@ void main() async {
     _isDarkMode = true;
   }
 
-  if(Html.window.navigator.doNotTrack == '1') {
-    setAnalytics(0);
+  int? lastvisit=prefs.getInt("matomo_first_visit");
+  if(lastvisit!=null){
+    await prefs.remove("matomo_first_visit");
+    await prefs.remove("matomo_visitor_id");
+    await prefs.remove("matomo_visit_count");
   }
-  else{
     analyticsEnabled = prefs.getInt('analytics') ?? -1;
+  if(Html.window.navigator.doNotTrack == '1') {
+    analyticsEnabled=0;
+  }
     if (analyticsEnabled == -1) {
       //MatomoTracker.instance.setOptOut(optOut: true);
       analyticsDialog();
-    } else if (analyticsEnabled == 1) {
+    }
       await MatomoTracker.instance.initialize(
         siteId: 1,
         url: 'https://gabalai.licejus.lt/matomo/matomo.php',
         cookieless: true,
       );
-    }}
+    if(analyticsEnabled !=1 ){
+      await MatomoTracker.instance.setOptOut(optOut: true);
+    }
+  
+
 
 
   runApp(const MyApp());
@@ -398,7 +391,7 @@ class _LoginPageState extends State<LoginPage> {
                     context: context,
                     builder: (BuildContext context) {
                       return AlertDialog(
-                        title: Text('Web versija: $tsgurl'),
+                        title: Text('Web versija: ${globals.websiteUrl}'),
                         content: SingleChildScrollView(
                             child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -409,7 +402,7 @@ class _LoginPageState extends State<LoginPage> {
                                 child: Container(
                                   color: Colors.white,
                                   child: QrImage(
-                                    data: tsgurl,
+                                    data: globals.websiteUrl,
                                     version: QrVersions.auto,
                                     size: 200,
                                   ),
@@ -420,8 +413,8 @@ class _LoginPageState extends State<LoginPage> {
                             ElevatedButton(
                               child: const Text('Eiti'),
                               onPressed: () async {
-                                if (await canLaunchUrlString(tsgurl)) {
-                                  launchUrlString(tsgurl,
+                                if (await canLaunchUrlString(globals.websiteUrl)) {
+                                  launchUrlString(globals.websiteUrl,
                                       mode: LaunchMode.externalApplication);
                                 }
                               },
@@ -461,7 +454,7 @@ class _LoginPageState extends State<LoginPage> {
                                     child: Container(
                                       color: Colors.white,
                                       child: QrImage(
-                                        data: androidurl,
+                                        data: globals.androidDlUrl,
                                         version: QrVersions.auto,
                                         size: 200,
                                       ),
@@ -472,8 +465,8 @@ class _LoginPageState extends State<LoginPage> {
                                 ElevatedButton(
                                   child: const Text('Parsisiųsti'),
                                   onPressed: () async {
-                                    if (await canLaunchUrlString(androidurl)) {
-                                      launchUrlString(androidurl,
+                                    if (await canLaunchUrlString(globals.androidDlUrl)) {
+                                      launchUrlString(globals.androidDlUrl,
                                           mode: LaunchMode.externalApplication);
                                     }
                                   },
@@ -506,8 +499,8 @@ class _LoginPageState extends State<LoginPage> {
                         content: ElevatedButton(
                           child: const Text('Parsisiųsti'),
                           onPressed: () async {
-                            if (await canLaunchUrlString(windowsurl)) {
-                              launchUrlString(windowsurl,
+                            if (await canLaunchUrlString(globals.windowsDlUrl)) {
+                              launchUrlString(globals.windowsDlUrl,
                                   mode: LaunchMode.externalApplication);
                             }
                           },
@@ -545,7 +538,7 @@ class _LoginPageState extends State<LoginPage> {
       Tooltip(
         message: "Informacija",
         child: IconButton(
-          icon: const Icon(Icons.bug_report_rounded),
+          icon: const Icon(Icons.info_outline_rounded),
           onPressed: () {
             showDialog(
               context: context,
@@ -556,6 +549,12 @@ class _LoginPageState extends State<LoginPage> {
                       //'Licencija - GPL v3\nProgramos versija - $ver\nSukūrė Kristupas Lapinskas\n\nFunkcijų užklausos ir pranešimai apie trūkumus gali būti siunčiami GitHub arba kristupas.lapinskas@licejus.lt'),
                       'Licencija - GPL v3\nProgramos versija - beta 1.1 (nedaug testuota, stabili versija gabalai.licejus.lt/old)\nSukūrė Kristupas Lapinskas\n\nFunkcijų užklausos ir pranešimai apie trūkumus gali būti siunčiami GitHub arba kristupas.lapinskas@licejus.lt'),
                   actions: <Widget>[
+                    TextButton(
+                      child: const Text('Analitikos pasirinkimas'),
+                      onPressed: () {
+                        analyticsDialog();
+                      },
+                    ),
                     TextButton(
                       child: const Text('GPL v3'),
                       onPressed: () {
@@ -594,8 +593,8 @@ class _LoginPageState extends State<LoginPage> {
                     TextButton(
                       child: const Text('GitHub'),
                       onPressed: () async {
-                        if (await canLaunchUrlString(githuburl)) {
-                          launchUrlString(githuburl,
+                        if (await canLaunchUrlString(globals.githubUrl)) {
+                          launchUrlString(globals.githubUrl,
                               mode: LaunchMode.externalApplication);
                         }
                       },
@@ -833,7 +832,7 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
                     context: context,
                     builder: (BuildContext context) {
                       return AlertDialog(
-                        title: Text('Web versija: $tsgurl'),
+                        title: Text('Web versija: ${globals.websiteUrl}'),
                         content: SingleChildScrollView(
                             child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -844,7 +843,7 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
                                 child: Container(
                                   color: Colors.white,
                                   child: QrImage(
-                                    data: tsgurl,
+                                    data: globals.websiteUrl,
                                     version: QrVersions.auto,
                                     size: 200,
                                   ),
@@ -855,8 +854,8 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
                             ElevatedButton(
                               child: const Text('Eiti'),
                               onPressed: () async {
-                                if (await canLaunchUrlString(tsgurl)) {
-                                  launchUrlString(tsgurl,
+                                if (await canLaunchUrlString(globals.websiteUrl)) {
+                                  launchUrlString(globals.websiteUrl,
                                       mode: LaunchMode.externalApplication);
                                 }
                               },
@@ -896,7 +895,7 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
                                     child: Container(
                                       color: Colors.white,
                                       child: QrImage(
-                                        data: androidurl,
+                                        data: globals.androidDlUrl,
                                         version: QrVersions.auto,
                                         size: 200,
                                       ),
@@ -907,8 +906,8 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
                                 ElevatedButton(
                                   child: const Text('Parsisiųsti'),
                                   onPressed: () async {
-                                    if (await canLaunchUrlString(androidurl)) {
-                                      launchUrlString(androidurl,
+                                    if (await canLaunchUrlString(globals.androidDlUrl)) {
+                                      launchUrlString(globals.androidDlUrl,
                                           mode: LaunchMode.externalApplication);
                                     }
                                   },
@@ -941,8 +940,8 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
                         content: ElevatedButton(
                           child: const Text('Parsisiųsti'),
                           onPressed: () async {
-                            if (await canLaunchUrlString(windowsurl)) {
-                              launchUrlString(windowsurl,
+                            if (await canLaunchUrlString(globals.windowsDlUrl)) {
+                              launchUrlString(globals.windowsDlUrl,
                                   mode: LaunchMode.externalApplication);
                             }
                           },
@@ -980,7 +979,7 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
       Tooltip(
         message: "Informacija",
         child: IconButton(
-          icon: const Icon(Icons.bug_report_rounded),
+          icon: const Icon(Icons.info_outline_rounded),
           onPressed: () {
             showDialog(
               context: context,
@@ -1035,8 +1034,8 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
                     TextButton(
                       child: const Text('GitHub'),
                       onPressed: () async {
-                        if (await canLaunchUrlString(githuburl)) {
-                          launchUrlString(githuburl,
+                        if (await canLaunchUrlString(globals.githubUrl)) {
+                          launchUrlString(globals.githubUrl,
                               mode: LaunchMode.externalApplication);
                         }
                       },
@@ -1081,7 +1080,7 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
         headers: {'Authorization': basicAuth}));*/
     try {
       // AAC example: https://dl.espressif.com/dl/audio/ff-16b-2c-44100hz.aac
-      await tempplayer.setAudioSource(AudioSource.uri(Uri.parse(testurl),
+      await tempplayer.setAudioSource(AudioSource.uri(Uri.parse(globals.testUrl),
           headers: {'Authorization': basicAuth}));
     } catch (e) {
       //šis dialogas naudojamas ir kitur, reikėtų jį perkelti į vieną funkciją (bet tai padarius kažkodėl kartojama funkcija nelaukiant mygtukų paspaudimo)

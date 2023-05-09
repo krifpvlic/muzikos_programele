@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 
 void addLicences() {
   LicenseRegistry.addLicense(() => Stream<LicenseEntry>.value(
-    const LicenseEntryWithLineBreaks(<String>['loading icon (Flutter Gallery)'], '''
+    const LicenseEntryWithLineBreaks(<String>['loading animation (Flutter Gallery)'], '''
 BSD 3-Clause License
 
 Copyright (c) 2020, Flutter

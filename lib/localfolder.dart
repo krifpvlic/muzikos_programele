@@ -1,7 +1,6 @@
-import 'dart:html';
-
+//import 'package:universal_html/html.dart';
 import 'package:flutter/material.dart';
-import 'package:file_system_access_api/file_system_access_api.dart';
+//import 'package:file_system_access_api/file_system_access_api.dart';
 import 'package:just_audio/just_audio.dart';
 
 class MyCustomSource extends StreamAudioSource {
@@ -34,13 +33,13 @@ class _FolderSelectState extends State<FolderSelect>{
   @override
   void initState() {
     super.initState();
-    if (!FileSystemAccess.supported) {
+    /*if (!FileSystemAccess.supported) {
       print("NOT SUPPORTED!!!!");
       //TODO: implement unsupported popup
-    }
+    }*/
   }
 
-  Future<void> pickDirectory() async {
+  /*Future<void> pickDirectory() async {
     try{
     FileSystemDirectoryHandle directory = await window.showDirectoryPicker(mode: PermissionMode.readwrite);
 
@@ -60,7 +59,7 @@ class _FolderSelectState extends State<FolderSelect>{
 
 
 
-
+*/
 
 
   @override
@@ -73,7 +72,7 @@ class _FolderSelectState extends State<FolderSelect>{
     body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          IconButton(onPressed: pickDirectory, icon: Icon(Icons.drive_folder_upload_outlined))
+          //IconButton(onPressed: pickDirectory, icon: Icon(Icons.drive_folder_upload_outlined))
         ],
     ),
 

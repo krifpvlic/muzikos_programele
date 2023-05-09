@@ -6,8 +6,7 @@ import 'package:rxdart/rxdart.dart';
 import 'package:path/path.dart' as p;
 import '../matomo/matomo_tracker.dart';
 import '../localfolder.dart';
-String uri1 = "https://library.licejus.lt";
-
+import '../globals.dart' as globals;
 
 
 class ListPlay extends StatefulWidget {
@@ -108,7 +107,7 @@ class ListPlayState extends State<ListPlay> with WidgetsBindingObserver, Traceab
                 _selectedIndex = value as int;
               });
               !widget.local ? await _player.setAudioSource(AudioSource.uri(
-                  Uri.parse("${uri1}${widget.linkList[_selectedIndex]}"),
+                  Uri.parse("${globals.serverUrl}${widget.linkList[_selectedIndex]}"),
                   headers: {'Authorization': widget.basicAuth})) : await _player.setAudioSource(MyCustomSource(widget.fileHandle.readAs)); //TODO: implement local file reading
               //setState(() {
               //  duration = 0 as Duration;
