@@ -265,7 +265,7 @@ void main() async {
 
     var encryptedFile = await loadAsset();
     final akey = enc.Key.fromUtf8(key);
-    final iv = enc.IV.fromLength(16);
+    final iv = enc.IV.allZerosOfLength(16);
     final encrypter = enc.Encrypter(enc.AES(akey));
     final encrypted = enc.Encrypted.fromBase64(encryptedFile);
     decrypted = encrypter.decrypt(encrypted, iv: iv);
@@ -368,17 +368,21 @@ List<Widget> mygtukai(BuildContext context, void setState(void Function() fn)) {
                           child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          SizedBox(
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: SizedBox(
                               width: 200,
                               height: 200,
                               child: Container(
                                 color: Colors.white,
-                                child: QrImage(
+                                child: QrImageView(
                                   data: globals.websiteUrl,
                                   version: QrVersions.auto,
                                   size: 200,
                                 ),
-                              )),
+                              ),
+                            ),
+                          ),
                           const Padding(
                             padding: EdgeInsets.all(5.0),
                           ),
@@ -421,17 +425,21 @@ List<Widget> mygtukai(BuildContext context, void setState(void Function() fn)) {
                         child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              SizedBox(
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: SizedBox(
                                   width: 200,
                                   height: 200,
                                   child: Container(
                                     color: Colors.white,
-                                    child: QrImage(
-                                      data: globals.androidDlUrl,
+                                    child: QrImageView(
+                                      data: globals.websiteUrl,
                                       version: QrVersions.auto,
                                       size: 200,
                                     ),
-                                  )),
+                                  ),
+                                ),
+                              ),
                               const Padding(
                                 padding: EdgeInsets.all(5.0),
                               ),
@@ -718,7 +726,7 @@ class _LoginPageState extends State<LoginPage> {
       basicAuth = 'Basic $bas64';
       var encryptedFile = await loadAsset();
       final akey = enc.Key.fromUtf8(key);
-      final iv = enc.IV.fromLength(16);
+      final iv = enc.IV.allZerosOfLength(16);
       try {
         final encrypter = enc.Encrypter(enc.AES(akey));
         final encrypted = enc.Encrypted.fromBase64(encryptedFile);
@@ -794,67 +802,70 @@ class _LoginPageState extends State<LoginPage> {
                     ]
                 : mygtukai(context, setState)),
         body: Center(
-            child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.8,
-                        child: TextFormField(
-                          controller: _usernameController,
-                          decoration: const InputDecoration(
-                            labelText: 'Prisijungimo vardas',
-                          ),
-                          validator: (value) {
-                            if (value?.isEmpty ?? true) {
-                              return 'Įveskite prisijungimo vardą';
-                            }
-                            return null;
-                          },
-                          onSaved: (value) => _username = value ?? '',
-                        ),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.8,
+                    child: TextFormField(
+                      controller: _usernameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Prisijungimo vardas',
                       ),
+                      validator: (value) {
+                        if (value?.isEmpty ?? true) {
+                          return 'Įveskite prisijungimo vardą';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) => _username = value ?? '',
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.8,
-                        child: TextFormField(
-                          controller: _passwordController,
-                          decoration: const InputDecoration(
-                            labelText: 'Slaptažodis',
-                          ),
-                          validator: (value) {
-                            if (value?.isEmpty ?? true) {
-                              return 'Įveskite slaptažodį';
-                            }
-                            return null;
-                          },
-                          onSaved: (value) => _password = value ?? '',
-                        ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.8,
+                    child: TextFormField(
+                      controller: _passwordController,
+                      decoration: const InputDecoration(
+                        labelText: 'Slaptažodis',
                       ),
+                      validator: (value) {
+                        if (value?.isEmpty ?? true) {
+                          return 'Įveskite slaptažodį';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) => _password = value ?? '',
+                      onEditingComplete: _handleContinuePress, // Add this line
                     ),
-                    ElevatedButton(
-                      onPressed: _handleContinuePress,
-                      child: const Text('Tęsti'),
-                    ),
-                    const Padding(padding: EdgeInsets.all(5.0)),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: const Center(
-                        child: kIsWeb
-                            ? Text(
-                                "Naršyklės versijoje šiuos prisijungimus reikės pakartotinai įvesti",
-                                textAlign: TextAlign.center,
-                              )
-                            : null,
-                      ),
-                    ),
-                  ],
-                ))));
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: _handleContinuePress,
+                  child: const Text('Tęsti'),
+                ),
+                const Padding(padding: EdgeInsets.all(5.0)),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: const Center(
+                    child: kIsWeb
+                        ? Text(
+                            "Naršyklės versijoje šiuos prisijungimus reikės pakartotinai įvesti",
+                            textAlign: TextAlign.center,
+                          )
+                        : null,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ));
   }
 }
 

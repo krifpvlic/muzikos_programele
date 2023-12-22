@@ -15,7 +15,20 @@ late String linkListSelections;
 //modifiedLinkList should be updated, saved according to the selected course, semester and folder
 
 class ModifyListPage extends StatefulWidget {
-  const ModifyListPage({super.key});
+  const ModifyListPage(
+      {super.key,
+      required this.title,
+      required this.course,
+      required this.semester,
+      required this.selectionIndex,
+      required this.username,
+      required this.password});
+  final String title;
+  final String course;
+  final String semester;
+  final int selectionIndex;
+  final String username;
+  final String password;
 
   @override
   _ModifyListPageState createState() => _ModifyListPageState();
@@ -23,35 +36,156 @@ class ModifyListPage extends StatefulWidget {
 
 class _ModifyListPageState extends State<ModifyListPage> {
   Set<int> _selectedIndexes =
-      Set<int>.from(List.generate(linkList.length, (index) => index));
+      Set<int>.from(List.generate(partLinkList.length, (index) => index));
+  String? _selectionIdentifier;
+  bool _isLoading = true;
+  late SharedPreferences prefs;
+  @override
+  void initState() {
+    super.initState();
+    _selectionIdentifier = widget.course +
+        widget.semester +
+        widget.selectionIndex.toString() +
+        "sel";
+    handleSave();
+  }
+
+  //function to create modifiedLinkList
+  List<String> createModifiedLinkList() {
+    modifiedLinkList = [];
+    for (int i = 0; i < partLinkList.length; i++) {
+      if (_selectedIndexes.contains(i)) {
+        modifiedLinkList.add(partLinkList[i]);
+      }
+    }
+    return modifiedLinkList;
+  }
+
+  //function should convert _selectedIndexes to a string in the form of 0011010100111 where 1 is selected and 0 is not selected
+  String convertSelections() {
+    linkListSelections = "";
+    for (int i = 0; i < partLinkList.length; i++) {
+      if (_selectedIndexes.contains(i)) {
+        linkListSelections += "1";
+      } else {
+        linkListSelections += "0";
+      }
+    }
+    return linkListSelections;
+  }
+
+  Set<int> convertString() {
+    _selectedIndexes =
+        Set<int>.from(List.generate(partLinkList.length, (index) => index));
+    for (int i = 0; i < partLinkList.length; i++) {
+      if (linkListSelections[i] == "0") {
+        _selectedIndexes.remove(i);
+      }
+    }
+    return _selectedIndexes;
+  }
+
+  void handleSave() async {
+    prefs = await SharedPreferences.getInstance();
+    String? savedSelectionIdentifier = prefs.getString(_selectionIdentifier!);
+    if (savedSelectionIdentifier != null) {
+      linkListSelections = savedSelectionIdentifier;
+      convertString();
+    } else {
+      convertSelections();
+    }
+    // print(_selectedIndexes);
+    setState(() {
+      _isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(Uri.decodeComponent(
-            linkList[0].split("/").sublist(4, 5).join("/"))),
-      ),
-      body: ListView.builder(
-        itemCount: linkList.length,
-        itemBuilder: (context, index) {
-          return CheckboxListTile(
-            title: Text(Uri.decodeComponent(
-                p.basenameWithoutExtension(linkList[index]))),
-            value: _selectedIndexes.contains(index),
-            onChanged: (value) {
-              setState(() {
-                if (value == true) {
-                  _selectedIndexes.add(index);
-                } else {
-                  _selectedIndexes.remove(index);
-                }
-              });
-            },
-          );
-        },
-      ),
-    );
+        appBar: AppBar(
+          title: Text(widget.title),
+          actions: [
+            Container(
+              margin:
+                  EdgeInsets.only(right: 22.0), // Adjust the spacing as needed
+              child: Tooltip(
+                message: _selectedIndexes.length != partLinkList.length
+                    ? 'Pažymėti visus'
+                    : 'Atžymėti visus',
+                child: IconButton(
+                  onPressed: () {
+                    setState(() {
+                      if (_selectedIndexes.length != partLinkList.length) {
+                        _selectedIndexes = Set<int>.from(List.generate(
+                            partLinkList.length,
+                            (index) => index)); //reset selection
+                        convertSelections();
+                        prefs.remove(_selectionIdentifier!);
+                      } else {
+                        _selectedIndexes = {};
+                        prefs.setString(
+                            _selectionIdentifier!, convertSelections());
+                      }
+                    });
+                  },
+                  icon: _selectedIndexes.length == partLinkList.length
+                      ? const Icon(Icons.check_box_rounded)
+                      : _selectedIndexes.length == 0
+                          ? const Icon(Icons.check_box_outline_blank_rounded)
+                          : const Icon(Icons.indeterminate_check_box_rounded),
+                ),
+              ),
+            ),
+          ],
+        ),
+        body: _isLoading
+            ? Center(child: CircularProgressIndicator())
+            : ListView.builder(
+                itemCount: partLinkList.length,
+                itemBuilder: (context, index) {
+                  return CheckboxListTile(
+                    title: Text(Uri.decodeComponent(
+                        p.basenameWithoutExtension(partLinkList[index]))),
+                    value: _selectedIndexes.contains(index),
+                    onChanged: (value) {
+                      print(value);
+                      setState(() {
+                        if (value == true) {
+                          _selectedIndexes.add(index);
+                          linkListSelections = linkListSelections.replaceRange(
+                              index, index + 1, "1");
+                        } else {
+                          _selectedIndexes.remove(index);
+                          linkListSelections = linkListSelections.replaceRange(
+                              index, index + 1, "0");
+                        }
+                      });
+
+                      prefs.setString(
+                          _selectionIdentifier!, linkListSelections);
+                    },
+                  );
+                },
+              ),
+        floatingActionButton: FloatingActionButton(
+          onPressed:
+              //if set is not empty
+              _selectedIndexes.isNotEmpty
+                  ? () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => LearningPlay(
+                              linkList: createModifiedLinkList(),
+                              basicAuth: basicAuth,
+                              username: widget.username,
+                              password: widget.password),
+                        ),
+                      );
+                    }
+                  : null,
+          child: const Icon(Icons.arrow_forward_rounded),
+        ));
   }
 }
 
@@ -186,6 +320,9 @@ class _DirectoryPageState extends State<DirectoryPage>
                         Navigator.of(context).push(
                           MaterialPageRoute(
                               builder: (context) => ListPlay(
+                                  title: _selectedFolder == "Visi"
+                                      ? "${widget.course} kurso ${widget.semester} pusmečio klausymas"
+                                      : Uri.decodeComponent(_selectedFolder!),
                                   linkList: partLinkList,
                                   basicAuth: basicAuth,
                                   username: _username,
@@ -225,12 +362,22 @@ class _DirectoryPageState extends State<DirectoryPage>
                                 onPressed: _selectedFolder == null
                                     ? null
                                     : () {
-                                        Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                ModifyListPage(),
+                                        Navigator.of(context)
+                                            .push(MaterialPageRoute(
+                                          builder: (context) => ModifyListPage(
+                                            title:
+                                                "Sąrašo modifikavimas (${_selectedFolder == "Visi" ? "${widget.course} kurso ${widget.semester} pusmečio" : Uri.decodeComponent(_selectedFolder!)})",
+                                            course: widget.course,
+                                            semester: widget.semester,
+                                            selectionIndex: _selectedFolder ==
+                                                    "Visi"
+                                                ? -1
+                                                : linkList
+                                                    .indexOf(partLinkList[0]),
+                                            username: _username,
+                                            password: _password,
                                           ),
-                                        );
+                                        ));
                                       },
                                 icon: const Icon(Icons.edit_note)),
                           ))),

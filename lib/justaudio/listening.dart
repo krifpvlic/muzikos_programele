@@ -15,6 +15,7 @@ class ListPlay extends StatefulWidget {
   final String basicAuth;
   final bool local;
   final fileHandle;
+  final String title;
   const ListPlay(
       {Key? key,
       required this.linkList,
@@ -22,6 +23,7 @@ class ListPlay extends StatefulWidget {
       required this.username,
       required this.password,
       required this.local,
+      required this.title,
       this.fileHandle})
       : super(key: key);
 
@@ -94,65 +96,78 @@ class ListPlayState extends State<ListPlay>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(Uri.decodeComponent(
-            widget.linkList[0].split("/").sublist(4, 5).join("/"))),
-      ),
-      body:
-          //Column(children:[
-          ListView.builder(
-        itemCount: widget.linkList.length,
-        itemBuilder: (context, index) {
-          return RadioListTile(
-            title: Text(Uri.decodeComponent(
-                p.basenameWithoutExtension(widget.linkList[index]))),
-            value: index,
-            groupValue: _selectedIndex,
-            onChanged: (value) async {
-              setState(() {
-                _selectedIndex = value as int;
-              });
-              !widget.local
-                  ? await _player.setAudioSource(AudioSource.uri(
-                      Uri.parse(
-                          "${globals.serverUrl}${widget.linkList[_selectedIndex]}"),
-                      headers: {
-                          'Authorization': widget.basicAuth
-                        }))
-                  : await _player.setAudioSource(MyCustomSource(widget
-                      .fileHandle.readAs)); //TODO: implement local file reading
-              //setState(() {
-              //  duration = 0 as Duration;
-              //});
-            },
-          );
-        },
-      ),
-      bottomSheet: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Display play/pause button and volume/speed sliders.
-          ControlButtons(_player),
-          // Display seek bar. Using StreamBuilder, this widget rebuilds
-          // each time the position, buffered position or duration changes.
-          StreamBuilder<PositionData>(
-            stream: _positionDataStream,
-            builder: (context, snapshot) {
-              final positionData = snapshot.data;
-              return SeekBar(
-                duration: positionData?.duration ?? Duration.zero,
-                position: positionData?.position ?? Duration.zero,
-                bufferedPosition:
-                    positionData?.bufferedPosition ?? Duration.zero,
-                onChangeEnd: _player.seek,
-              );
-            },
-          ),
-        ],
-      ),
-    );
+        appBar: AppBar(
+          title: Text(widget.title),
+        ),
+        body: Column(
+          children: [
+            Expanded(
+              // Wrap ListView with Expanded
+              child: ListView.builder(
+                itemCount: widget.linkList.length,
+                itemBuilder: (context, index) {
+                  return RadioListTile(
+                    title: Text(Uri.decodeComponent(
+                        p.basenameWithoutExtension(widget.linkList[index]))),
+                    value: index,
+                    groupValue: _selectedIndex,
+                    onChanged: (value) async {
+                      setState(() {
+                        _selectedIndex = value as int;
+                      });
+                      !widget.local
+                          ? await _player.setAudioSource(AudioSource.uri(
+                              Uri.parse(
+                                  "${globals.serverUrl}${widget.linkList[_selectedIndex]}"),
+                              headers: {
+                                  'Authorization': widget.basicAuth
+                                }))
+                          : await _player.setAudioSource(MyCustomSource(widget
+                              .fileHandle
+                              .readAs)); //TODO: implement local file reading
+                      //setState(() {
+                      //  duration = 0 as Duration;
+                      //});
+                    },
+                  );
+                },
+              ),
+            ),
+            Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).bottomSheetTheme.backgroundColor,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(16.0),
+                  topRight: Radius.circular(16.0),
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Display play/pause button and volume/speed sliders.
+                  ControlButtons(_player),
+                  // Display seek bar. Using StreamBuilder, this widget rebuilds
+                  // each time the position, buffered position or duration changes.
+                  StreamBuilder<PositionData>(
+                    stream: _positionDataStream,
+                    builder: (context, snapshot) {
+                      final positionData = snapshot.data;
+                      return SeekBar(
+                        duration: positionData?.duration ?? Duration.zero,
+                        position: positionData?.position ?? Duration.zero,
+                        bufferedPosition:
+                            positionData?.bufferedPosition ?? Duration.zero,
+                        onChangeEnd: _player.seek,
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ));
   }
 
   @override

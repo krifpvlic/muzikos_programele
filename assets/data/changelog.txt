@@ -1,9 +1,4 @@
 Pakeitimų sąrašas:
 
+Galima modifikuoti testavimo kūrinių sąrašą
 Atnaujinti Flutter paketai
-Web versijoje pridėta krovimosi animacija
-Minimalūs paleidimo greičio optimizavimai
-Įdiegta Matomo analitikos sistema (pasirenkama, neprivaloma)
-Pirmo paleidimo metu paaiškinamas testavimo veikimas
-Pridėta versijos ignoravimo funkcija
-Sutvarkytas paspaudimo už iššokusio lango ribų funkcionalumas neteisingai atspėjus kūrinį

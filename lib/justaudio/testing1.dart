@@ -374,27 +374,72 @@ class LearningPlayState extends State<LearningPlay>
             },
           ),
         ]),
-        body: ListView.builder(
-          itemCount: musicPiecesList.length,
-          itemBuilder: (context, index) {
-            return RadioListTile(
-              title: Text(musicPiecesList[index]["name"]),
-              value: index,
-              groupValue: _selectedIndex,
-              onChanged: (value) async {
-                setState(() {
-                  _selectedIndex = value as int;
-                });
-                if (kDebugMode) print(_selectedIndex);
-                //await _player.setAudioSource(AudioSource.uri(
-                //    Uri.parse("${uri1}${widget.linkList[_selectedIndex]}"),
-                //    headers: {'Authorization': basicAuth}));
-                //setState(() {
-                //  duration = 0 as Duration;
-                //});
-              },
-            );
-          },
+        body: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                itemCount: musicPiecesList.length,
+                itemBuilder: (context, index) {
+                  return RadioListTile(
+                    title: Text(musicPiecesList[index]["name"]),
+                    value: index,
+                    groupValue: _selectedIndex,
+                    onChanged: (value) async {
+                      setState(() {
+                        _selectedIndex = value as int;
+                      });
+                      if (kDebugMode) print(_selectedIndex);
+                      //await _player.setAudioSource(AudioSource.uri(
+                      //    Uri.parse("${uri1}${widget.linkList[_selectedIndex]}"),
+                      //    headers: {'Authorization': basicAuth}));
+                      //setState(() {
+                      //  duration = 0 as Duration;
+                      //});
+                    },
+                  );
+                },
+              ),
+            ),
+            if (showControls)
+              Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).bottomSheetTheme.backgroundColor,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(16.0),
+                    topRight: Radius.circular(16.0),
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                        "${(queuePos + 1).toString()}/${(queue.length).toString()}"),
+                    if (kDebugMode)
+                      Text(musicPiecesList[queue[queuePos]]['name']),
+                    if (kDebugMode) Text(queue[queuePos].toString()),
+                    // Display play/pause button and volume/speed sliders.
+                    ControlButtons(_player),
+                    // Display seek bar. Using StreamBuilder, this widget rebuilds
+                    // each time the position, buffered position or duration changes.
+                    StreamBuilder<PositionData>(
+                      stream: _positionDataStream,
+                      builder: (context, snapshot) {
+                        final positionData = snapshot.data;
+                        return SeekBar(
+                          duration: positionData?.duration ?? Duration.zero,
+                          position: positionData?.position ?? Duration.zero,
+                          bufferedPosition:
+                              positionData?.bufferedPosition ?? Duration.zero,
+                          onChangeEnd: _player.seek,
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+          ],
         ),
         floatingActionButton: true
             ? FloatingActionButton(
@@ -432,38 +477,7 @@ class LearningPlayState extends State<LearningPlay>
                 child: const Icon(Icons.check_rounded),
               )
             : null,
-        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-        bottomSheet: showControls
-            ? Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                      "${(queuePos + 1).toString()}/${(queue.length).toString()}"),
-                  if (kDebugMode)
-                    Text(musicPiecesList[queue[queuePos]]['name']),
-                  if (kDebugMode) Text(queue[queuePos].toString()),
-                  // Display play/pause button and volume/speed sliders.
-                  ControlButtons(_player),
-                  // Display seek bar. Using StreamBuilder, this widget rebuilds
-                  // each time the position, buffered position or duration changes.
-                  StreamBuilder<PositionData>(
-                    stream: _positionDataStream,
-                    builder: (context, snapshot) {
-                      final positionData = snapshot.data;
-                      return SeekBar(
-                        duration: positionData?.duration ?? Duration.zero,
-                        position: positionData?.position ?? Duration.zero,
-                        bufferedPosition:
-                            positionData?.bufferedPosition ?? Duration.zero,
-                        onChangeEnd: _player.seek,
-                      );
-                    },
-                  ),
-                ],
-              )
-            : null);
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat);
   }
 
   @override
