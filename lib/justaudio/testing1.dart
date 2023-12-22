@@ -12,7 +12,7 @@ import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'common.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:path/path.dart' as Path;
+import 'package:path/path.dart' as path;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 
@@ -22,7 +22,7 @@ List<Map<String, dynamic>> createMusicPiecesList(List<String> links) {
       (i) => {
             "link": links[i],
             "name":
-                Uri.decodeComponent(Path.basenameWithoutExtension(links[i])),
+                Uri.decodeComponent(path.basenameWithoutExtension(links[i])),
             "correct": 0,
             "incorrect": 0
           });
@@ -63,13 +63,13 @@ class LearningPlayState extends State<LearningPlay>
   int queuePos = 0;
   bool okPressed = false;
   bool goalTracked = false;
-  int totalcorrect=0;
+  int totalcorrect = 0;
   String uri1 = "https://library.licejus.lt";
 
   Future<void> play(BuildContext context) async {
     try {
       await _player.setAudioSource(AudioSource.uri(
-          Uri.parse("${uri1}${musicPiecesList[queue[queuePos]]['link']}"),
+          Uri.parse("$uri1${musicPiecesList[queue[queuePos]]['link']}"),
           headers: {'Authorization': widget.basicAuth}));
     } catch (e) {
       showDialog(
@@ -133,7 +133,7 @@ class LearningPlayState extends State<LearningPlay>
         }
         int initialQueuePos = queuePos;
 
-        Future.delayed(Duration(seconds: 60), () {
+        Future.delayed(const Duration(seconds: 60), () {
           if (queuePos == initialQueuePos) _player.stop();
         });
       }
@@ -154,8 +154,9 @@ class LearningPlayState extends State<LearningPlay>
     if (kDebugMode) {
       print(rangeStart);
     }
-    if (rangeStart < (piecePosition / 10 + 1).toInt() * 10)
+    if (rangeStart < (piecePosition / 10 + 1).toInt() * 10) {
       rangeStart = (piecePosition / 10 + 1).toInt() * 10;
+    }
     if (kDebugMode) {
       print((piecePosition / 10 + 1).toInt() * 10);
     }
@@ -166,8 +167,9 @@ class LearningPlayState extends State<LearningPlay>
     if (kDebugMode) {
       print(rangeEnd);
     }
-    if (rangeEnd > (piecePosition / 10 + 2).toInt() * 10)
+    if (rangeEnd > (piecePosition / 10 + 2).toInt() * 10) {
       rangeEnd = (piecePosition / 10 + 2).toInt() * 10;
+    }
     if (kDebugMode) {
       print((piecePosition / 10 + 2).toInt() * 10);
     }
@@ -196,37 +198,37 @@ class LearningPlayState extends State<LearningPlay>
 
   void showInfo(BuildContext context, bool barrierDismissible) {
     showDialog(
-      barrierDismissible: barrierDismissible,
+        barrierDismissible: barrierDismissible,
         context: context,
         builder: (BuildContext context) => AlertDialog(
-              title: Text('Informacija'),
+              title: const Text('Informacija'),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                         'Dabar grojamas ${(queuePos + 1).toString()} kūrinys iš ${(queue.length).toString()} eilėje.\n\nTestavimo veikimo principas:\nAtsitiktine tvarka leidžiami kūriniai, tikslas kuo daugiau jų atspėti. Atspėjus kūrinį pereinama prie kito, o neatspėjus parodomas teisingas atsakymas ir kūrinys vėl pridedamas prie eilės. Kūriniai grojami minutę.\n'),
-                    Icon(
+                    const Icon(
                       Icons.last_page_outlined,
                     ),
-                    Text(
+                    const Text(
                         'Paspaudus šį mygtuką galima pasiklausyti kūrinį iš naujo arba kitos jo dalies\n'),
-                    Icon(
+                    const Icon(
                       Icons.start_rounded,
                     ),
-                    Text(
+                    const Text(
                         'Paspaudus šį mygtuką kūriniai bus leidžiami nuo jų pradžios\n'),
-                    Icon(
+                    const Icon(
                       Icons.shuffle_rounded,
                     ),
-                    Text(
+                    const Text(
                         'Paspaudus šį mygtuką kūrinių pradžia bus atsitiktinai parenkama')
                   ],
                 ),
               ),
               actions: <Widget>[
                 TextButton(
-                  child: Text('OK'),
+                  child: const Text('OK'),
                   onPressed: () {
                     Navigator.of(context).pop();
                     okPressed = true;
@@ -257,21 +259,22 @@ class LearningPlayState extends State<LearningPlay>
       print('A stream error occurred: $e');
     });
     if (kDebugMode) {
-      print("${uri1}${musicPiecesList[queuePos]['link']}");
+      print("$uri1${musicPiecesList[queuePos]['link']}");
     }
     final prefs = await SharedPreferences.getInstance();
     double infoLevel = prefs.getDouble('infoLevel') ?? 0;
     if (infoLevel < 2) {
       Future.delayed(Duration.zero, () {
         if (_key.currentContext != null) {
-          showInfo(_key.currentContext!,false);
+          showInfo(_key.currentContext!, false);
         }
         prefs.setDouble('infoLevel', 2);
       });
-    } else
+    } else {
       okPressed = true;
+    }
     while (!okPressed) {
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 100));
     }
     play(context);
     // Try to load audio from a source and catch any errors.
@@ -326,7 +329,9 @@ class LearningPlayState extends State<LearningPlay>
         Navigator.of(context).pop();
       }
       totalcorrect++;
-      if(totalcorrect>(musicPiecesList.length/3) && totalcorrect>=7 && !goalTracked){
+      if (totalcorrect > (musicPiecesList.length / 3) &&
+          totalcorrect >= 7 &&
+          !goalTracked) {
         MatomoTracker.instance.trackGoal(1);
         goalTracked = true;
       }
@@ -338,8 +343,8 @@ class LearningPlayState extends State<LearningPlay>
             AppBar(title: const Text("Pasirinkite kūrinį"), actions: <Widget>[
           IconButton(
             icon: _isRandomize
-                ? Icon(Icons.start_rounded)
-                : Icon(Icons.shuffle_rounded),
+                ? const Icon(Icons.start_rounded)
+                : const Icon(Icons.shuffle_rounded),
             onPressed: () {
               setState(() {
                 _isRandomize = !_isRandomize;
@@ -347,7 +352,7 @@ class LearningPlayState extends State<LearningPlay>
             },
           ),
           IconButton(
-            icon: Icon(Icons.last_page_outlined),
+            icon: const Icon(Icons.last_page_outlined),
             onPressed: () {
               setState(() {
                 showControls = true;
@@ -356,16 +361,16 @@ class LearningPlayState extends State<LearningPlay>
           ),
           if (kDebugMode)
             IconButton(
-              icon: Icon(Icons.check),
+              icon: const Icon(Icons.check),
               onPressed: () {
                 handleCorrectGuess(queue, queuePos, musicPiecesList);
                 play(context);
               },
             ),
           IconButton(
-            icon: Icon(Icons.info),
+            icon: const Icon(Icons.info),
             onPressed: () {
-              showInfo(context,true);
+              showInfo(context, true);
             },
           ),
         ]),
@@ -405,12 +410,12 @@ class LearningPlayState extends State<LearningPlay>
                             context: context,
                             builder: (BuildContext context) {
                               return AlertDialog(
-                                title: Text('Neteisingai'),
+                                title: const Text('Neteisingai'),
                                 content: Text(
                                     'Teisingas atsakymas: ${musicPiecesList[queue[queuePos - 1]]["name"]}'),
                                 actions: <Widget>[
                                   TextButton(
-                                    child: Text('OK'),
+                                    child: const Text('OK'),
                                     onPressed: () {
                                       Navigator.of(context).pop();
                                     },
@@ -424,42 +429,39 @@ class LearningPlayState extends State<LearningPlay>
                     : null,
                 tooltip: 'Pasirinkti',
                 elevation: 0.0,
-                child: Icon(Icons.check_rounded),
+                child: const Icon(Icons.check_rounded),
               )
             : null,
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         bottomSheet: showControls
-            ? Column(mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                            "${(queuePos + 1).toString()}/${(queue.length).toString()}"),
-                        if (kDebugMode)
-                          Text(musicPiecesList[queue[queuePos]]['name']),
-                        if (kDebugMode) Text(queue[queuePos].toString()),
-                        // Display play/pause button and volume/speed sliders.
-                        ControlButtons(_player),
-                        // Display seek bar. Using StreamBuilder, this widget rebuilds
-                        // each time the position, buffered position or duration changes.
-                        StreamBuilder<PositionData>(
-                          stream: _positionDataStream,
-                          builder: (context, snapshot) {
-                            final positionData = snapshot.data;
-                            return SeekBar(
-                              duration: positionData?.duration ?? Duration.zero,
-                              position: positionData?.position ?? Duration.zero,
-                              bufferedPosition:
-                                  positionData?.bufferedPosition ??
-                                      Duration.zero,
-                              onChangeEnd: _player.seek,
-                            );
-                          },
-                        ),
-                      ],
-
-
-
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                      "${(queuePos + 1).toString()}/${(queue.length).toString()}"),
+                  if (kDebugMode)
+                    Text(musicPiecesList[queue[queuePos]]['name']),
+                  if (kDebugMode) Text(queue[queuePos].toString()),
+                  // Display play/pause button and volume/speed sliders.
+                  ControlButtons(_player),
+                  // Display seek bar. Using StreamBuilder, this widget rebuilds
+                  // each time the position, buffered position or duration changes.
+                  StreamBuilder<PositionData>(
+                    stream: _positionDataStream,
+                    builder: (context, snapshot) {
+                      final positionData = snapshot.data;
+                      return SeekBar(
+                        duration: positionData?.duration ?? Duration.zero,
+                        position: positionData?.position ?? Duration.zero,
+                        bufferedPosition:
+                            positionData?.bufferedPosition ?? Duration.zero,
+                        onChangeEnd: _player.seek,
+                      );
+                    },
+                  ),
+                ],
               )
             : null);
   }

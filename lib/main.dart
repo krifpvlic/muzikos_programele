@@ -1,6 +1,7 @@
 //to test - if matomo works on first launch; check if matomo license is shown
 //add selection for kuriniai
-import 'package:universal_html/html.dart' as Html;
+import 'package:flutter/gestures.dart';
+import 'package:universal_html/html.dart' as html;
 import 'package:matomo_tracker/matomo_tracker.dart';
 import 'dart:io';
 import 'package:google_fonts/google_fonts.dart';
@@ -12,7 +13,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import 'package:muzikos_programele/Selection.dart';
+import 'package:muzikos_programele/selection.dart';
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:http/http.dart' as http;
 import 'package:encrypt/encrypt.dart' as enc;
@@ -41,7 +42,7 @@ void setAnalytics(int value) async {
   if (value == 1) {
     MatomoTracker.instance.setOptOut(optOut: false);
   }
-  if(value == 0) {
+  if (value == 0) {
     MatomoTracker.instance.setOptOut(optOut: true);
   }
 }
@@ -71,7 +72,8 @@ void analyticsDialog() async {
                         onTap: () async {
                           if (await canLaunchUrlString(
                               "https://gabalai.licejus.lt/matomo/")) {
-                            launchUrlString("https://gabalai.licejus.lt/matomo/");
+                            launchUrlString(
+                                "https://gabalai.licejus.lt/matomo/");
                           }
                         },
                       ),
@@ -92,7 +94,6 @@ void analyticsDialog() async {
               TextButton(
                 child: const Text('Nesutinku'),
                 onPressed: () {
-
                   MatomoTracker.instance.setOptOut(optOut: true);
                   setAnalytics(0);
                   Navigator.of(context).pop();
@@ -101,7 +102,6 @@ void analyticsDialog() async {
               TextButton(
                 child: const Text('Sutinku'),
                 onPressed: () {
-
                   MatomoTracker.instance.setOptOut(optOut: false);
                   setAnalytics(1);
                   Navigator.of(context).pop();
@@ -131,14 +131,12 @@ Future<String> loadGpl() async {
 }
 
 Future<String> loadVersion() async {
-  return rootBundle
-      .loadString('assets/data/newversion')
-      .then((value) => value);
+  return rootBundle.loadString('assets/data/newversion').then((value) => value);
 }
 
 Future<String> loadStringFromWebFile() async {
-  final response =
-  await http.get(Uri.parse("${globals.websiteUrl}/assets/assets/data/newversion"));
+  final response = await http
+      .get(Uri.parse("${globals.websiteUrl}/assets/assets/data/newversion"));
   if (response.statusCode == 200) {
     return response.body;
   } else {
@@ -147,8 +145,8 @@ Future<String> loadStringFromWebFile() async {
 }
 
 Future<String> loadChangelog() async {
-  final response =
-  await http.get(Uri.parse("${globals.websiteUrl}/assets/assets/data/changelog.txt"));
+  final response = await http
+      .get(Uri.parse("${globals.websiteUrl}/assets/assets/data/changelog.txt"));
   if (response.statusCode == 200) {
     return response.body;
   } else {
@@ -158,11 +156,11 @@ Future<String> loadChangelog() async {
 
 void checkUpdates(BuildContext context) async {
   if (!kIsWeb) {
-  double ver = 0;
-  ver = double.parse(await loadVersion());
-  final prefs = await SharedPreferences.getInstance();
-  double skippedVersion=prefs.getDouble('skippedVersion') ?? 0;
-  double newver = double.parse(await loadStringFromWebFile());
+    double ver = 0;
+    ver = double.parse(await loadVersion());
+    final prefs = await SharedPreferences.getInstance();
+    double skippedVersion = prefs.getDouble('skippedVersion') ?? 0;
+    double newver = double.parse(await loadStringFromWebFile());
     if (ver < newver && newver != skippedVersion) {
       String changelog = await loadChangelog();
       showDialog(
@@ -174,27 +172,27 @@ void checkUpdates(BuildContext context) async {
                 child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(changelog),
-                      const Padding(
-                        padding: EdgeInsets.all(10.0),
-                      ),
-                      ElevatedButton(
-                        child: const Text('Parsisiųsti'),
-                        onPressed: () async {
-                          if (Platform.isAndroid) {
-                            if (await canLaunchUrlString(globals.androidDlUrl)) {
-                              launchUrlString(globals.androidDlUrl,
-                                  mode: LaunchMode.externalApplication);
-                            }
-                          } else if (Platform.isWindows) {
-                            if (await canLaunchUrlString(globals.windowsDlUrl)) {
-                              launchUrlString(globals.windowsDlUrl,
-                                  mode: LaunchMode.externalApplication);
-                            }
-                          }
-                        },
-                      ),
-                    ])),
+                  Text(changelog),
+                  const Padding(
+                    padding: EdgeInsets.all(10.0),
+                  ),
+                  ElevatedButton(
+                    child: const Text('Parsisiųsti'),
+                    onPressed: () async {
+                      if (Platform.isAndroid) {
+                        if (await canLaunchUrlString(globals.androidDlUrl)) {
+                          launchUrlString(globals.androidDlUrl,
+                              mode: LaunchMode.externalApplication);
+                        }
+                      } else if (Platform.isWindows) {
+                        if (await canLaunchUrlString(globals.windowsDlUrl)) {
+                          launchUrlString(globals.windowsDlUrl,
+                              mode: LaunchMode.externalApplication);
+                        }
+                      }
+                    },
+                  ),
+                ])),
             actions: <Widget>[
               TextButton(
                 child: const Text('Praleisti šią versiją'),
@@ -217,8 +215,6 @@ void checkUpdates(BuildContext context) async {
   }
 }
 
-
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   addLicences();
@@ -231,34 +227,30 @@ void main() async {
     _isDarkMode = true;
   }
 
-  int? lastvisit=prefs.getInt("matomo_first_visit");
-  if(lastvisit!=null){
+  int? lastvisit = prefs.getInt("matomo_first_visit");
+  if (lastvisit != null) {
     await prefs.remove("matomo_first_visit");
     await prefs.remove("matomo_visitor_id");
     await prefs.remove("matomo_visit_count");
   }
-    analyticsEnabled = prefs.getInt('analytics') ?? -1;
-  if(Html.window.navigator.doNotTrack == '1') {
-    analyticsEnabled=0;
+  analyticsEnabled = prefs.getInt('analytics') ?? -1;
+  if (html.window.navigator.doNotTrack == '1') {
+    analyticsEnabled = 0;
   }
-    if (analyticsEnabled == -1) {
-      //MatomoTracker.instance.setOptOut(optOut: true);
-      analyticsDialog();
-    }
-      await MatomoTracker.instance.initialize(
-        siteId: 1,
-        url: 'https://gabalai.licejus.lt/matomo/matomo.php',
-        cookieless: true,
-      );
-    if(analyticsEnabled !=1 ){
-      await MatomoTracker.instance.setOptOut(optOut: true);
-    }
-  
-
-
+  if (analyticsEnabled == -1) {
+    //MatomoTracker.instance.setOptOut(optOut: true);
+    analyticsDialog();
+  }
+  await MatomoTracker.instance.initialize(
+    siteId: 1,
+    url: 'https://gabalai.licejus.lt/matomo/matomo.php',
+    cookieless: true,
+  );
+  if (analyticsEnabled != 1) {
+    await MatomoTracker.instance.setOptOut(optOut: true);
+  }
 
   runApp(const MyApp());
-
 
   _username = prefs.getString('username');
   _password = prefs.getString('password');
@@ -280,9 +272,7 @@ void main() async {
     listConverted = json.decode(decrypted);
   }
 
-
   gplver = await loadGpl();
-
 }
 
 class MyApp extends StatelessWidget {
@@ -345,7 +335,8 @@ class MyApp extends StatelessWidget {
         builder: (theme, darkTheme) => MaterialApp(
               title: 'GabalAI',
               //jeigu yra išsaugoti prisijungimo duomenys, einam tiesiai į HomePage
-              home: !isSaved & !isSkipped ? const LoginPage() : const HomePage(),
+              home:
+                  !isSaved & !isSkipped ? const LoginPage() : const HomePage(),
               theme: theme,
               darkTheme: darkTheme,
             ));
@@ -358,6 +349,312 @@ class LoginPage extends StatefulWidget {
 
   @override
   _LoginPageState createState() => _LoginPageState();
+}
+
+List<Widget> mygtukai(BuildContext context, void setState(void Function() fn)) {
+  return [
+    if (!kIsWeb)
+      Tooltip(
+        message: "Nuoroda į web versiją",
+        child: IconButton(
+            icon: const Icon(Icons.link_rounded),
+            onPressed: () {
+              showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text('Web versija: ${globals.websiteUrl}'),
+                      content: SingleChildScrollView(
+                          child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                              width: 200,
+                              height: 200,
+                              child: Container(
+                                color: Colors.white,
+                                child: QrImage(
+                                  data: globals.websiteUrl,
+                                  version: QrVersions.auto,
+                                  size: 200,
+                                ),
+                              )),
+                          const Padding(
+                            padding: EdgeInsets.all(5.0),
+                          ),
+                          ElevatedButton(
+                            child: const Text('Eiti'),
+                            onPressed: () async {
+                              if (await canLaunchUrlString(
+                                  globals.websiteUrl)) {
+                                launchUrlString(globals.websiteUrl,
+                                    mode: LaunchMode.externalApplication);
+                              }
+                            },
+                          ),
+                        ],
+                      )),
+                      actions: <Widget>[
+                        TextButton(
+                          child: const Text('OK'),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ],
+                    );
+                  });
+            }),
+      ),
+    if (kIsWeb || Platform.isWindows)
+      Tooltip(
+        message: 'Android versijos parsisiuntimas',
+        child: IconButton(
+            icon: const Icon(Icons.android_rounded),
+            onPressed: () {
+              showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text('Android programa'),
+                      content: SingleChildScrollView(
+                        child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                  width: 200,
+                                  height: 200,
+                                  child: Container(
+                                    color: Colors.white,
+                                    child: QrImage(
+                                      data: globals.androidDlUrl,
+                                      version: QrVersions.auto,
+                                      size: 200,
+                                    ),
+                                  )),
+                              const Padding(
+                                padding: EdgeInsets.all(5.0),
+                              ),
+                              ElevatedButton(
+                                child: const Text('Parsisiųsti'),
+                                onPressed: () async {
+                                  if (await canLaunchUrlString(
+                                      globals.androidDlUrl)) {
+                                    launchUrlString(globals.androidDlUrl,
+                                        mode: LaunchMode.externalApplication);
+                                  }
+                                },
+                              ),
+                            ]),
+                      ),
+                      actions: <Widget>[
+                        TextButton(
+                          child: const Text('Uždaryti'),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ],
+                    );
+                  });
+            }),
+      ),
+    if (kIsWeb || Platform.isAndroid)
+      Tooltip(
+        message: "Windows versijos parsisiuntimas",
+        child: IconButton(
+            icon: const Icon(Icons.desktop_windows_rounded),
+            onPressed: () {
+              showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text('Windows programa'),
+                      content: ElevatedButton(
+                        child: const Text('Parsisiųsti'),
+                        onPressed: () async {
+                          if (await canLaunchUrlString(globals.windowsDlUrl)) {
+                            launchUrlString(globals.windowsDlUrl,
+                                mode: LaunchMode.externalApplication);
+                          }
+                        },
+                      ),
+                      actions: <Widget>[
+                        TextButton(
+                          child: const Text('OK'),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ],
+                    );
+                  });
+            }),
+      ),
+    Tooltip(
+      message: "Šviesaus/tamsaus UI keitimas",
+      child: IconButton(
+        icon: !_isDarkMode
+            ? const Icon(Icons.brightness_3_rounded)
+            : const Icon(Icons.brightness_5_rounded),
+        onPressed: () {
+          setState(() {
+            _isDarkMode = !_isDarkMode;
+            if (_isDarkMode) {
+              AdaptiveTheme.of(context).setDark();
+            } else {
+              AdaptiveTheme.of(context).setLight();
+            }
+          });
+        },
+      ),
+    ),
+    Tooltip(
+      message: "Informacija",
+      child: IconButton(
+        icon: const Icon(Icons.info_outline_rounded),
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('Informacija'),
+                // content: Text(
+                //     //'Licencija - GPL v3\nProgramos versija - $ver\nSukūrė Kristupas Lapinskas\n\nFunkcijų užklausos ir pranešimai apie trūkumus gali būti siunčiami GitHub arba kristupas.lapinskas@licejus.lt'),
+                //     'Licencija - GPL v3\nProgramos versija - beta 1.2\nStabili versija - gabalai.licejus.lt/old\nSukūrė Kristupas Lapinskas\n\nFunkcijų užklausos ir pranešimai apie trūkumus gali būti siunčiami GitHub arba kristupas.lapinskas@licejus.lt'),
+                content: Text.rich(
+                  TextSpan(
+                    text: 'Licencija - ',
+                    style: const TextStyle(),
+                    children: <TextSpan>[
+                      TextSpan(
+                        text: 'GPL v3',
+                        style: TextStyle(
+                          color: Theme.of(context)
+                              .textButtonTheme
+                              .style
+                              ?.foregroundColor
+                              ?.resolve({}),
+                          // decoration: TextDecoration.underline,
+                        ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: const Text('GPL v3'),
+                                    content: SingleChildScrollView(
+                                        child: Text(gplver)),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: const Text("OK"))
+                                    ],
+                                  );
+                                });
+                          },
+                      ),
+                      const TextSpan(
+                        text:
+                            '\nProgramos versija - beta 1.3\nAnkstesnė versija - ',
+                      ),
+                      TextSpan(
+                        text: 'gabalai.licejus.lt/old',
+                        style: TextStyle(
+                          color: Theme.of(context)
+                              .textButtonTheme
+                              .style
+                              ?.foregroundColor
+                              ?.resolve({}),
+                          // decoration: TextDecoration.underline,
+                        ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () async {
+                            if (await canLaunchUrlString(
+                                "https://gabalai.licejus.lt/old")) {
+                              launchUrlString("https://gabalai.licejus.lt/old",
+                                  mode: LaunchMode.externalApplication);
+                            }
+                          },
+                      ),
+                      const TextSpan(
+                          text:
+                              '\nSukūrė Kristupas Lapinskas\n\nFunkcijų užklausos ir pranešimai apie trūkumus gali būti siunčiami '),
+                      TextSpan(
+                        text: "GitHub",
+                        style: TextStyle(
+                          // color: Colors.blue,
+                          color: Theme.of(context)
+                              .textButtonTheme
+                              .style
+                              ?.foregroundColor
+                              ?.resolve({}),
+                          // decoration: TextDecoration.underline,
+                        ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () async {
+                            if (await canLaunchUrlString(globals.githubUrl)) {
+                              launchUrlString(globals.githubUrl,
+                                  mode: LaunchMode.externalApplication);
+                            }
+                          },
+                      ),
+                      const TextSpan(text: ".")
+                    ],
+                  ),
+                ),
+
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text('Analitikos pasirinkimas'),
+                    onPressed: () {
+                      analyticsDialog();
+                    },
+                  ),
+                  // TextButton(
+                  //   child: const Text('GPL v3'),
+                  //   onPressed: () {
+                  //     {}
+                  //   },
+                  // ),
+                  TextButton(
+                    child: const Text('Kitos licencijos'),
+                    onPressed: () {
+                      showLicensePage(
+                        context: context,
+                        applicationIcon:
+                            const ImageIcon(AssetImage("assets/data/icon.png")),
+                        applicationLegalese:
+                            "dirbtinis intelektas programėlėje nenaudojamas",
+                      );
+                    },
+                  ),
+                  // TextButton(
+                  //   child: const Text('GitHub'),
+                  //   onPressed: () async {
+                  //     if (await canLaunchUrlString(globals.githubUrl)) {
+                  //       launchUrlString(globals.githubUrl,
+                  //           mode: LaunchMode.externalApplication);
+                  //     }
+                  //   },
+                  // ),
+                  TextButton(
+                    child: const Text('OK'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      ),
+    ),
+  ];
 }
 
 class _LoginPageState extends State<LoginPage> {
@@ -374,245 +671,7 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
     checkUpdates(context);
-    dabartinis=context;
-  }
-
-
-  //kopijuota iš kito class... negerai
-  List<Widget> mygtukai(BuildContext context) {
-    return [
-      if (!kIsWeb)
-        Tooltip(
-          message: "Nuoroda į web versiją",
-          child: IconButton(
-              icon: const Icon(Icons.link_rounded),
-              onPressed: () {
-                showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text('Web versija: ${globals.websiteUrl}'),
-                        content: SingleChildScrollView(
-                            child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                                width: 200,
-                                height: 200,
-                                child: Container(
-                                  color: Colors.white,
-                                  child: QrImage(
-                                    data: globals.websiteUrl,
-                                    version: QrVersions.auto,
-                                    size: 200,
-                                  ),
-                                )),
-                            const Padding(
-                              padding: EdgeInsets.all(5.0),
-                            ),
-                            ElevatedButton(
-                              child: const Text('Eiti'),
-                              onPressed: () async {
-                                if (await canLaunchUrlString(globals.websiteUrl)) {
-                                  launchUrlString(globals.websiteUrl,
-                                      mode: LaunchMode.externalApplication);
-                                }
-                              },
-                            ),
-                          ],
-                        )),
-                        actions: <Widget>[
-                          TextButton(
-                            child: const Text('OK'),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                        ],
-                      );
-                    });
-              }),
-        ),
-      if (kIsWeb || Platform.isWindows)
-        Tooltip(
-          message: 'Android versijos parsisiuntimas',
-          child: IconButton(
-              icon: const Icon(Icons.android_rounded),
-              onPressed: () {
-                showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: const Text('Android programa'),
-                        content: SingleChildScrollView(
-                          child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                SizedBox(
-                                    width: 200,
-                                    height: 200,
-                                    child: Container(
-                                      color: Colors.white,
-                                      child: QrImage(
-                                        data: globals.androidDlUrl,
-                                        version: QrVersions.auto,
-                                        size: 200,
-                                      ),
-                                    )),
-                                const Padding(
-                                  padding: EdgeInsets.all(5.0),
-                                ),
-                                ElevatedButton(
-                                  child: const Text('Parsisiųsti'),
-                                  onPressed: () async {
-                                    if (await canLaunchUrlString(globals.androidDlUrl)) {
-                                      launchUrlString(globals.androidDlUrl,
-                                          mode: LaunchMode.externalApplication);
-                                    }
-                                  },
-                                ),
-                              ]),
-                        ),
-                        actions: <Widget>[
-                          TextButton(
-                            child: const Text('Uždaryti'),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                        ],
-                      );
-                    });
-              }),
-        ),
-      if (kIsWeb || Platform.isAndroid)
-        Tooltip(
-          message: "Windows versijos parsisiuntimas",
-          child: IconButton(
-              icon: const Icon(Icons.desktop_windows_rounded),
-              onPressed: () {
-                showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: const Text('Windows programa'),
-                        content: ElevatedButton(
-                          child: const Text('Parsisiųsti'),
-                          onPressed: () async {
-                            if (await canLaunchUrlString(globals.windowsDlUrl)) {
-                              launchUrlString(globals.windowsDlUrl,
-                                  mode: LaunchMode.externalApplication);
-                            }
-                          },
-                        ),
-                        actions: <Widget>[
-                          TextButton(
-                            child: const Text('OK'),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                        ],
-                      );
-                    });
-              }),
-        ),
-      Tooltip(
-        message: "Šviesaus/tamsaus UI keitimas",
-        child: IconButton(
-          icon: !_isDarkMode
-              ? const Icon(Icons.brightness_3_rounded)
-              : const Icon(Icons.brightness_5_rounded),
-          onPressed: () {
-            setState(() {
-              _isDarkMode = !_isDarkMode;
-              if (_isDarkMode) {
-                AdaptiveTheme.of(context).setDark();
-              } else {
-                AdaptiveTheme.of(context).setLight();
-              }
-            });
-          },
-        ),
-      ),
-      Tooltip(
-        message: "Informacija",
-        child: IconButton(
-          icon: const Icon(Icons.info_outline_rounded),
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: const Text('Informacija'),
-                  content: Text(
-                      //'Licencija - GPL v3\nProgramos versija - $ver\nSukūrė Kristupas Lapinskas\n\nFunkcijų užklausos ir pranešimai apie trūkumus gali būti siunčiami GitHub arba kristupas.lapinskas@licejus.lt'),
-                      'Licencija - GPL v3\nProgramos versija - beta 1.2\nStabili versija - gabalai.licejus.lt/old\nSukūrė Kristupas Lapinskas\n\nFunkcijų užklausos ir pranešimai apie trūkumus gali būti siunčiami GitHub arba kristupas.lapinskas@licejus.lt'),
-                  actions: <Widget>[
-                    TextButton(
-                      child: const Text('Analitikos pasirinkimas'),
-                      onPressed: () {
-                        analyticsDialog();
-                      },
-                    ),
-                    TextButton(
-                      child: const Text('GPL v3'),
-                      onPressed: () {
-                        {
-                          showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  title: const Text('GPL v3'),
-                                  content: SingleChildScrollView(
-                                      child: Text(gplver)),
-                                  actions: [
-                                    TextButton(
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: const Text("OK"))
-                                  ],
-                                );
-                              });
-                        }
-                      },
-                    ),
-                    TextButton(
-                      child: const Text('Kitos licencijos'),
-                      onPressed: () {
-                        showLicensePage(
-                            context: context,
-                            applicationIcon:
-                                const ImageIcon(AssetImage("assets/data/icon.png")),
-                            applicationLegalese:
-                                "dirbtinis intelektas programėlėje nenaudojamas",
-                        );
-                      },
-                    ),
-                    TextButton(
-                      child: const Text('GitHub'),
-                      onPressed: () async {
-                        if (await canLaunchUrlString(globals.githubUrl)) {
-                          launchUrlString(globals.githubUrl,
-                              mode: LaunchMode.externalApplication);
-                        }
-                      },
-                    ),
-                    TextButton(
-                      child: const Text('OK'),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                  ],
-                );
-              },
-            );
-          },
-        ),
-      ),
-    ];
+    dabartinis = context;
   }
 
   void failAuthDialog() {
@@ -693,20 +752,20 @@ class _LoginPageState extends State<LoginPage> {
                 message: "library.licejus.lt prisijungimas",
                 child: Text('library.licejus.lt prisijungimas')),
             actions: kDebugMode
-                ? mygtukai(context) +
+                ? mygtukai(context, setState) +
                     <Widget>[
                       Tooltip(
                           message: "Praleisti",
                           child: IconButton(
-                              icon:
-                                  const Icon(Icons.subdirectory_arrow_right_rounded),
+                              icon: const Icon(
+                                  Icons.subdirectory_arrow_right_rounded),
                               onPressed: () {
                                 showDialog(
                                     context: context,
                                     builder: (BuildContext context) {
                                       return AlertDialog(
-                                        title:
-                                            const Text('Ar tikrai norite praleisti?'),
+                                        title: const Text(
+                                            'Ar tikrai norite praleisti?'),
                                         content: const SingleChildScrollView(
                                             child: Text(
                                                 "Praleidus prisijungimą nebus pasiekiami library.licejus.lt kūriniai, juos reikės įkelti iš savo įrenginio. Vėlesnis grįžimas į prisijungimo langą galimas.")),
@@ -733,7 +792,7 @@ class _LoginPageState extends State<LoginPage> {
                                     });
                               }))
                     ]
-                : mygtukai(context)),
+                : mygtukai(context, setState)),
         body: Center(
             child: Form(
                 key: _formKey,
@@ -819,255 +878,13 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
         'app_debug': kDebugMode ? 'debug' : 'release',
       });*/
 
-  //kopijuota tas pats į kitą state... negerai
-  List<Widget> mygtukai(BuildContext context) {
-    return [
-      if (!kIsWeb)
-        Tooltip(
-          message: "Nuoroda į web versiją",
-          child: IconButton(
-              icon: const Icon(Icons.link_rounded),
-              onPressed: () {
-                showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text('Web versija: ${globals.websiteUrl}'),
-                        content: SingleChildScrollView(
-                            child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                                width: 200,
-                                height: 200,
-                                child: Container(
-                                  color: Colors.white,
-                                  child: QrImage(
-                                    data: globals.websiteUrl,
-                                    version: QrVersions.auto,
-                                    size: 200,
-                                  ),
-                                )),
-                            const Padding(
-                              padding: EdgeInsets.all(5.0),
-                            ),
-                            ElevatedButton(
-                              child: const Text('Eiti'),
-                              onPressed: () async {
-                                if (await canLaunchUrlString(globals.websiteUrl)) {
-                                  launchUrlString(globals.websiteUrl,
-                                      mode: LaunchMode.externalApplication);
-                                }
-                              },
-                            ),
-                          ],
-                        )),
-                        actions: <Widget>[
-                          TextButton(
-                            child: const Text('OK'),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                        ],
-                      );
-                    });
-              }),
-        ),
-      if (kIsWeb || Platform.isWindows)
-        Tooltip(
-          message: 'Android versijos parsisiuntimas',
-          child: IconButton(
-              icon: const Icon(Icons.android_rounded),
-              onPressed: () {
-                showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: const Text('Android programa'),
-                        content: SingleChildScrollView(
-                          child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                SizedBox(
-                                    width: 200,
-                                    height: 200,
-                                    child: Container(
-                                      color: Colors.white,
-                                      child: QrImage(
-                                        data: globals.androidDlUrl,
-                                        version: QrVersions.auto,
-                                        size: 200,
-                                      ),
-                                    )),
-                                const Padding(
-                                  padding: EdgeInsets.all(5.0),
-                                ),
-                                ElevatedButton(
-                                  child: const Text('Parsisiųsti'),
-                                  onPressed: () async {
-                                    if (await canLaunchUrlString(globals.androidDlUrl)) {
-                                      launchUrlString(globals.androidDlUrl,
-                                          mode: LaunchMode.externalApplication);
-                                    }
-                                  },
-                                ),
-                              ]),
-                        ),
-                        actions: <Widget>[
-                          TextButton(
-                            child: const Text('Uždaryti'),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                        ],
-                      );
-                    });
-              }),
-        ),
-      if (kIsWeb || Platform.isAndroid)
-        Tooltip(
-          message: "Windows versijos parsisiuntimas",
-          child: IconButton(
-              icon: const Icon(Icons.desktop_windows_rounded),
-              onPressed: () {
-                showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: const Text('Windows programa'),
-                        content: ElevatedButton(
-                          child: const Text('Parsisiųsti'),
-                          onPressed: () async {
-                            if (await canLaunchUrlString(globals.windowsDlUrl)) {
-                              launchUrlString(globals.windowsDlUrl,
-                                  mode: LaunchMode.externalApplication);
-                            }
-                          },
-                        ),
-                        actions: <Widget>[
-                          TextButton(
-                            child: const Text('OK'),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                        ],
-                      );
-                    });
-              }),
-        ),
-      Tooltip(
-        message: "Šviesaus/tamsaus UI keitimas",
-        child: IconButton(
-          icon: !_isDarkMode
-              ? const Icon(Icons.brightness_3_rounded)
-              : const Icon(Icons.brightness_5_rounded),
-          onPressed: () {
-            setState(() {
-              _isDarkMode = !_isDarkMode;
-              if (_isDarkMode) {
-                AdaptiveTheme.of(context).setDark();
-              } else {
-                AdaptiveTheme.of(context).setLight();
-              }
-            });
-          },
-        ),
-      ),
-      Tooltip(
-        message: "Informacija",
-        child: IconButton(
-          icon: const Icon(Icons.info_outline_rounded),
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: const Text('Informacija'),
-                  content: Text(
-                    //'Licencija - GPL v3\nProgramos versija - $ver\nSukūrė Kristupas Lapinskas\n\nFunkcijų užklausos ir pranešimai apie trūkumus gali būti siunčiami GitHub arba kristupas.lapinskas@licejus.lt'),
-                      'Licencija - GPL v3\nProgramos versija - beta 1.2\nStabili versija - gabalai.licejus.lt/old\nSukūrė Kristupas Lapinskas\n\nFunkcijų užklausos ir pranešimai apie trūkumus gali būti siunčiami GitHub arba kristupas.lapinskas@licejus.lt'),
-                  actions: <Widget>[
-                    TextButton(
-                      child: const Text('Analitikos pasirinkimas'),
-                      onPressed: () {
-                        analyticsDialog();
-                      },
-                    ),
-                    TextButton(
-                      child: const Text('GPL v3'),
-                      onPressed: () {
-                        {
-                          showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  title: const Text('GPL v3'),
-                                  content: SingleChildScrollView(
-                                      child: Text(gplver)),
-                                  actions: [
-                                    TextButton(
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: const Text("OK"))
-                                  ],
-                                );
-                              });
-                        }
-                      },
-                    ),
-                    TextButton(
-                      child: const Text('Kitos licencijos'),
-                      onPressed: () {
-                        showLicensePage(
-                            context: context,
-                            applicationIcon:
-                                const ImageIcon(AssetImage("assets/data/icon.png")),
-                            applicationLegalese:
-                                "dirbtinis intelektas programėlėje nenaudojamas");
-                      },
-                    ),
-
-                    TextButton(
-                      child: const Text('GitHub'),
-                      onPressed: () async {
-                        if (await canLaunchUrlString(globals.githubUrl)) {
-                          launchUrlString(globals.githubUrl,
-                              mode: LaunchMode.externalApplication);
-                        }
-                      },
-                    ),
-                    TextButton(
-                      child: const Text('OK'),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                  ],
-                );
-              },
-            );
-          },
-        ),
-      ),
-    ];
-  }
-
-
-
-
-
-
   @override
   void initState() {
     super.initState();
     isSkipped ? null : loadlicejus();
     checkUpdates(context);
     _loadSelection();
-    dabartinis=context;
+    dabartinis = context;
   }
 
   Future<void> loadlicejus() async {
@@ -1079,8 +896,8 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
             testurl),
         headers: {'Authorization': basicAuth}));*/
     try {
-      // AAC example: https://dl.espressif.com/dl/audio/ff-16b-2c-44100hz.aac
-      await tempplayer.setAudioSource(AudioSource.uri(Uri.parse(globals.testUrl),
+      await tempplayer.setAudioSource(AudioSource.uri(
+          Uri.parse(globals.testUrl),
           headers: {'Authorization': basicAuth}));
     } catch (e) {
       //šis dialogas naudojamas ir kitur, reikėtų jį perkelti į vieną funkciją (bet tai padarius kažkodėl kartojama funkcija nelaukiant mygtukų paspaudimo)
@@ -1101,7 +918,8 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
                       InkWell(
                         child: const Text(
                           'atidarykite library.licejus.lt, prisijunkite ir spauskite "Bandyti vėl"',
-                          style: TextStyle(color: Color(0xff8484f2), fontSize: 20),
+                          style:
+                              TextStyle(color: Color(0xff8484f2), fontSize: 20),
                         ),
                         onTap: () async {
                           if (await canLaunchUrlString(
@@ -1171,7 +989,7 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
           title: const Tooltip(
               message: "(dirbtinis intelektas programėlėje nenaudojamas)",
               child: Text('GabalAI')),
-          actions: mygtukai(context),
+          actions: mygtukai(context, setState),
         ),
         body: Center(
           child: Column(
@@ -1257,6 +1075,7 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
           ),
         ));
   }
+
   @override
   String get traceName => 'Home';
   @override

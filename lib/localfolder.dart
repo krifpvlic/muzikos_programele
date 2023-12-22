@@ -21,15 +21,14 @@ class MyCustomSource extends StreamAudioSource {
   }
 }
 
+class FolderSelect extends StatefulWidget {
+  const FolderSelect({super.key});
 
-class FolderSelect extends StatefulWidget{
   @override
   State<StatefulWidget> createState() => _FolderSelectState();
-
 }
 
-class _FolderSelectState extends State<FolderSelect>{
-
+class _FolderSelectState extends State<FolderSelect> {
   @override
   void initState() {
     super.initState();
@@ -61,23 +60,20 @@ class _FolderSelectState extends State<FolderSelect>{
 
 */
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
+      appBar: AppBar(
         title: const Tooltip(
-        message: "Vietinio aplanko pasirinkimas",
-        child: Text('Vietinio aplanko pasirinkimas')),),
-    body: Column(
+            message: "Vietinio aplanko pasirinkimas",
+            child: Text('Vietinio aplanko pasirinkimas')),
+      ),
+      body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           //IconButton(onPressed: pickDirectory, icon: Icon(Icons.drive_folder_upload_outlined))
         ],
-    ),
-
-
+      ),
     );
   }
 }
-

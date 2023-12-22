@@ -8,7 +8,6 @@ import 'package:matomo_tracker/matomo_tracker.dart';
 import '../localfolder.dart';
 import '../globals.dart' as globals;
 
-
 class ListPlay extends StatefulWidget {
   final List<String> linkList;
   final String username;
@@ -16,13 +15,22 @@ class ListPlay extends StatefulWidget {
   final String basicAuth;
   final bool local;
   final fileHandle;
-  const ListPlay({Key? key, required this.linkList,required this.basicAuth,required this.username,required this.password, required this.local, this.fileHandle}) : super(key: key);
+  const ListPlay(
+      {Key? key,
+      required this.linkList,
+      required this.basicAuth,
+      required this.username,
+      required this.password,
+      required this.local,
+      this.fileHandle})
+      : super(key: key);
 
   @override
   ListPlayState createState() => ListPlayState();
 }
 
-class ListPlayState extends State<ListPlay> with WidgetsBindingObserver, TraceableClientMixin {
+class ListPlayState extends State<ListPlay>
+    with WidgetsBindingObserver, TraceableClientMixin {
   final _player = AudioPlayer();
   int _selectedIndex = -1;
   @override
@@ -72,8 +80,6 @@ class ListPlayState extends State<ListPlay> with WidgetsBindingObserver, Traceab
       _player.stop();
     }
   }
-  
-  
 
   /// Collects the data useful for displaying in a seek bar, using a handy
   /// feature of rx_dart to combine the 3 streams of interest into one.
@@ -89,9 +95,9 @@ class ListPlayState extends State<ListPlay> with WidgetsBindingObserver, Traceab
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("${Uri.decodeComponent(widget.linkList[0].split("/").sublist(4, 5).join("/"))}"),
+        title: Text(Uri.decodeComponent(
+            widget.linkList[0].split("/").sublist(4, 5).join("/"))),
       ),
-
       body:
           //Column(children:[
           ListView.builder(
@@ -106,9 +112,15 @@ class ListPlayState extends State<ListPlay> with WidgetsBindingObserver, Traceab
               setState(() {
                 _selectedIndex = value as int;
               });
-              !widget.local ? await _player.setAudioSource(AudioSource.uri(
-                  Uri.parse("${globals.serverUrl}${widget.linkList[_selectedIndex]}"),
-                  headers: {'Authorization': widget.basicAuth})) : await _player.setAudioSource(MyCustomSource(widget.fileHandle.readAs)); //TODO: implement local file reading
+              !widget.local
+                  ? await _player.setAudioSource(AudioSource.uri(
+                      Uri.parse(
+                          "${globals.serverUrl}${widget.linkList[_selectedIndex]}"),
+                      headers: {
+                          'Authorization': widget.basicAuth
+                        }))
+                  : await _player.setAudioSource(MyCustomSource(widget
+                      .fileHandle.readAs)); //TODO: implement local file reading
               //setState(() {
               //  duration = 0 as Duration;
               //});
@@ -116,36 +128,33 @@ class ListPlayState extends State<ListPlay> with WidgetsBindingObserver, Traceab
           );
         },
       ),
-      bottomSheet:
-
-Column(mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-
-            children: [
-              // Display play/pause button and volume/speed sliders.
-              ControlButtons(_player),
-              // Display seek bar. Using StreamBuilder, this widget rebuilds
-              // each time the position, buffered position or duration changes.
-              StreamBuilder<PositionData>(
-                stream: _positionDataStream,
-                builder: (context, snapshot) {
-                  final positionData = snapshot.data;
-                  return SeekBar(
-                    duration: positionData?.duration ?? Duration.zero,
-                    position: positionData?.position ?? Duration.zero,
-                    bufferedPosition:
-                        positionData?.bufferedPosition ?? Duration.zero,
-                    onChangeEnd: _player.seek,
-                  );
-                },
-              ),
-            ],
+      bottomSheet: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Display play/pause button and volume/speed sliders.
+          ControlButtons(_player),
+          // Display seek bar. Using StreamBuilder, this widget rebuilds
+          // each time the position, buffered position or duration changes.
+          StreamBuilder<PositionData>(
+            stream: _positionDataStream,
+            builder: (context, snapshot) {
+              final positionData = snapshot.data;
+              return SeekBar(
+                duration: positionData?.duration ?? Duration.zero,
+                position: positionData?.position ?? Duration.zero,
+                bufferedPosition:
+                    positionData?.bufferedPosition ?? Duration.zero,
+                onChangeEnd: _player.seek,
+              );
+            },
           ),
-
-
+        ],
+      ),
     );
   }
+
   @override
   String get traceName => 'Listening';
   @override
