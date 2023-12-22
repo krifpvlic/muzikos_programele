@@ -15,8 +15,8 @@
     </queries>
 
     <application
+        android:enableOnBackInvokedCallback="true"
         android:usesCleartextTraffic="true"
-
         android:label="GabalAI"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">

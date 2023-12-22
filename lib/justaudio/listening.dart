@@ -17,15 +17,14 @@ class ListPlay extends StatefulWidget {
   final fileHandle;
   final String title;
   const ListPlay(
-      {Key? key,
+      {super.key,
       required this.linkList,
       required this.basicAuth,
       required this.username,
       required this.password,
       required this.local,
       required this.title,
-      this.fileHandle})
-      : super(key: key);
+      this.fileHandle});
 
   @override
   ListPlayState createState() => ListPlayState();
@@ -136,7 +135,7 @@ class ListPlayState extends State<ListPlay>
             Container(
               decoration: BoxDecoration(
                 color: Theme.of(context).bottomSheetTheme.backgroundColor,
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(16.0),
                   topRight: Radius.circular(16.0),
                 ),
@@ -180,7 +179,7 @@ class ListPlayState extends State<ListPlay>
 class ControlButtons extends StatelessWidget {
   final AudioPlayer player;
 
-  const ControlButtons(this.player, {Key? key}) : super(key: key);
+  const ControlButtons(this.player, {super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -30,7 +30,7 @@ String gplver = "";
 bool isSaved = false;
 bool _isDarkMode = true;
 int analyticsEnabled = 0;
-late var decrypted;
+late String decrypted;
 late var listConverted;
 
 BuildContext? dabartinis;
@@ -71,9 +71,8 @@ void analyticsDialog() async {
                         ),
                         onTap: () async {
                           if (await canLaunchUrlString(
-                              "https://gabalai.licejus.lt/matomo/")) {
-                            launchUrlString(
-                                "https://gabalai.licejus.lt/matomo/");
+                              "https://gabalai.licejus.lt/mt/")) {
+                            launchUrlString("https://gabalai.licejus.lt/mt/");
                           }
                         },
                       ),
@@ -148,7 +147,9 @@ Future<String> loadChangelog() async {
   final response = await http
       .get(Uri.parse("${globals.websiteUrl}/assets/assets/data/changelog.txt"));
   if (response.statusCode == 200) {
-    return response.body;
+    final bytes = response.bodyBytes;
+    final decodedString = utf8.decode(bytes);
+    return decodedString;
   } else {
     return "Pakeitimų sąrašo gavimo klaida.";
   }
@@ -243,7 +244,7 @@ void main() async {
   }
   await MatomoTracker.instance.initialize(
     siteId: 1,
-    url: 'https://gabalai.licejus.lt/matomo/matomo.php',
+    url: 'https://gabalai.licejus.lt/mt/matomo.php',
     cookieless: true,
   );
   if (analyticsEnabled != 1) {
@@ -351,7 +352,8 @@ class LoginPage extends StatefulWidget {
   _LoginPageState createState() => _LoginPageState();
 }
 
-List<Widget> mygtukai(BuildContext context, void setState(void Function() fn)) {
+List<Widget> mygtukai(
+    BuildContext context, void Function(void Function() fn) setState) {
   return [
     if (!kIsWeb)
       Tooltip(
@@ -467,38 +469,38 @@ List<Widget> mygtukai(BuildContext context, void setState(void Function() fn)) {
                   });
             }),
       ),
-    if (kIsWeb || Platform.isAndroid)
-      Tooltip(
-        message: "Windows versijos parsisiuntimas",
-        child: IconButton(
-            icon: const Icon(Icons.desktop_windows_rounded),
-            onPressed: () {
-              showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: const Text('Windows programa'),
-                      content: ElevatedButton(
-                        child: const Text('Parsisiųsti'),
-                        onPressed: () async {
-                          if (await canLaunchUrlString(globals.windowsDlUrl)) {
-                            launchUrlString(globals.windowsDlUrl,
-                                mode: LaunchMode.externalApplication);
-                          }
-                        },
-                      ),
-                      actions: <Widget>[
-                        TextButton(
-                          child: const Text('OK'),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                        ),
-                      ],
-                    );
-                  });
-            }),
-      ),
+    // if (kIsWeb || Platform.isAndroid)
+    //   Tooltip(
+    //     message: "Windows versijos parsisiuntimas",
+    //     child: IconButton(
+    //         icon: const Icon(Icons.desktop_windows_rounded),
+    //         onPressed: () {
+    //           showDialog(
+    //               context: context,
+    //               builder: (BuildContext context) {
+    //                 return AlertDialog(
+    //                   title: const Text('Windows programa'),
+    //                   content: ElevatedButton(
+    //                     child: const Text('Parsisiųsti'),
+    //                     onPressed: () async {
+    //                       if (await canLaunchUrlString(globals.windowsDlUrl)) {
+    //                         launchUrlString(globals.windowsDlUrl,
+    //                             mode: LaunchMode.externalApplication);
+    //                       }
+    //                     },
+    //                   ),
+    //                   actions: <Widget>[
+    //                     TextButton(
+    //                       child: const Text('OK'),
+    //                       onPressed: () {
+    //                         Navigator.of(context).pop();
+    //                       },
+    //                     ),
+    //                   ],
+    //                 );
+    //               });
+    //         }),
+    //   ),
     Tooltip(
       message: "Šviesaus/tamsaus UI keitimas",
       child: IconButton(

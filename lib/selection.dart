@@ -34,7 +34,8 @@ class ModifyListPage extends StatefulWidget {
   _ModifyListPageState createState() => _ModifyListPageState();
 }
 
-class _ModifyListPageState extends State<ModifyListPage> {
+class _ModifyListPageState extends State<ModifyListPage>
+    with TraceableClientMixin {
   Set<int> _selectedIndexes =
       Set<int>.from(List.generate(partLinkList.length, (index) => index));
   String? _selectionIdentifier;
@@ -43,10 +44,8 @@ class _ModifyListPageState extends State<ModifyListPage> {
   @override
   void initState() {
     super.initState();
-    _selectionIdentifier = widget.course +
-        widget.semester +
-        widget.selectionIndex.toString() +
-        "sel";
+    _selectionIdentifier =
+        "${widget.course}${widget.semester}${widget.selectionIndex}sel";
     handleSave();
   }
 
@@ -107,8 +106,8 @@ class _ModifyListPageState extends State<ModifyListPage> {
           title: Text(widget.title),
           actions: [
             Container(
-              margin:
-                  EdgeInsets.only(right: 22.0), // Adjust the spacing as needed
+              margin: const EdgeInsets.only(
+                  right: 22.0), // Adjust the spacing as needed
               child: Tooltip(
                 message: _selectedIndexes.length != partLinkList.length
                     ? 'Pažymėti visus'
@@ -131,7 +130,7 @@ class _ModifyListPageState extends State<ModifyListPage> {
                   },
                   icon: _selectedIndexes.length == partLinkList.length
                       ? const Icon(Icons.check_box_rounded)
-                      : _selectedIndexes.length == 0
+                      : _selectedIndexes.isEmpty
                           ? const Icon(Icons.check_box_outline_blank_rounded)
                           : const Icon(Icons.indeterminate_check_box_rounded),
                 ),
@@ -140,7 +139,7 @@ class _ModifyListPageState extends State<ModifyListPage> {
           ],
         ),
         body: _isLoading
-            ? Center(child: CircularProgressIndicator())
+            ? const Center(child: CircularProgressIndicator())
             : ListView.builder(
                 itemCount: partLinkList.length,
                 itemBuilder: (context, index) {
@@ -149,7 +148,6 @@ class _ModifyListPageState extends State<ModifyListPage> {
                         p.basenameWithoutExtension(partLinkList[index]))),
                     value: _selectedIndexes.contains(index),
                     onChanged: (value) {
-                      print(value);
                       setState(() {
                         if (value == true) {
                           _selectedIndexes.add(index);
@@ -187,6 +185,11 @@ class _ModifyListPageState extends State<ModifyListPage> {
           child: const Icon(Icons.arrow_forward_rounded),
         ));
   }
+
+  @override
+  String get traceName => 'Modify';
+  @override
+  String get traceTitle => "GabalAI";
 }
 
 class DirectoryPage extends StatefulWidget {
@@ -194,8 +197,9 @@ class DirectoryPage extends StatefulWidget {
   final String semester;
   final listConverted;
   final bool local;
-  DirectoryPage(
-      {required this.course,
+  const DirectoryPage(
+      {super.key,
+      required this.course,
       required this.semester,
       required this.listConverted,
       required this.local});
@@ -296,8 +300,7 @@ class _DirectoryPageState extends State<DirectoryPage>
                       .map((path) => DropdownMenuItem<String>(
                             value: path,
                             child: Text(Uri.decodeComponent(path)),
-                          ))
-                      .toList(),
+                          )),
                 ],
                 onChanged: (path) {
                   setState(() {

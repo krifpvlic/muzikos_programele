@@ -40,12 +40,11 @@ class LearningPlay extends StatefulWidget {
   final String password;
   final String basicAuth;
   const LearningPlay(
-      {Key? key,
+      {super.key,
       required this.linkList,
       required this.basicAuth,
       required this.username,
-      required this.password})
-      : super(key: key);
+      required this.password});
 
   @override
   LearningPlayState createState() => LearningPlayState();
@@ -55,7 +54,7 @@ class LearningPlayState extends State<LearningPlay>
     with WidgetsBindingObserver, TraceableClientMixin {
   final GlobalKey<State> _key = GlobalKey<State>();
   var _isRandomize = true;
-  var _selectedIndex;
+  int? _selectedIndex;
   final _player = AudioPlayer();
   late List<Map<String, dynamic>> musicPiecesList;
   late List<int> queue;
@@ -341,24 +340,30 @@ class LearningPlayState extends State<LearningPlay>
         key: _key,
         appBar:
             AppBar(title: const Text("Pasirinkite kūrinį"), actions: <Widget>[
-          IconButton(
-            icon: _isRandomize
-                ? const Icon(Icons.start_rounded)
-                : const Icon(Icons.shuffle_rounded),
-            onPressed: () {
-              setState(() {
-                _isRandomize = !_isRandomize;
-              });
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.last_page_outlined),
-            onPressed: () {
-              setState(() {
-                showControls = true;
-              });
-            },
-          ),
+          Tooltip(
+              child: IconButton(
+                icon: _isRandomize
+                    ? const Icon(Icons.start_rounded)
+                    : const Icon(Icons.shuffle_rounded),
+                onPressed: () {
+                  setState(() {
+                    _isRandomize = !_isRandomize;
+                  });
+                },
+              ),
+              message: _isRandomize
+                  ? 'Leisti kūrinius nuo pradžios'
+                  : 'Atsitiktinai parinkti kūrinių pradžią'),
+          Tooltip(
+              child: IconButton(
+                icon: const Icon(Icons.last_page_outlined),
+                onPressed: () {
+                  setState(() {
+                    showControls = true;
+                  });
+                },
+              ),
+              message: 'Iš naujo pasiklausyti kūrinį'),
           if (kDebugMode)
             IconButton(
               icon: const Icon(Icons.check),
@@ -404,7 +409,7 @@ class LearningPlayState extends State<LearningPlay>
               Container(
                 decoration: BoxDecoration(
                   color: Theme.of(context).bottomSheetTheme.backgroundColor,
-                  borderRadius: BorderRadius.only(
+                  borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(16.0),
                     topRight: Radius.circular(16.0),
                   ),
@@ -441,42 +446,39 @@ class LearningPlayState extends State<LearningPlay>
               ),
           ],
         ),
-        floatingActionButton: true
-            ? FloatingActionButton(
-                onPressed: _selectedIndex != null
-                    ? () {
-                        if (_selectedIndex == queue[queuePos]) {
-                          handleCorrectGuess(queue, queuePos, musicPiecesList);
-                          play(context);
-                        } else {
-                          handleIncorrectGuess(
-                              queue, queuePos, musicPiecesList);
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: const Text('Neteisingai'),
-                                content: Text(
-                                    'Teisingas atsakymas: ${musicPiecesList[queue[queuePos - 1]]["name"]}'),
-                                actions: <Widget>[
-                                  TextButton(
-                                    child: const Text('OK'),
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                  ),
-                                ],
-                              );
-                            },
-                          ).then((_) => play(context));
-                        }
-                      }
-                    : null,
-                tooltip: 'Pasirinkti',
-                elevation: 0.0,
-                child: const Icon(Icons.check_rounded),
-              )
-            : null,
+        floatingActionButton: FloatingActionButton(
+          onPressed: _selectedIndex != null
+              ? () {
+                  if (_selectedIndex == queue[queuePos]) {
+                    handleCorrectGuess(queue, queuePos, musicPiecesList);
+                    play(context);
+                  } else {
+                    handleIncorrectGuess(queue, queuePos, musicPiecesList);
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Neteisingai'),
+                          content: Text(
+                              'Teisingas atsakymas: ${musicPiecesList[queue[queuePos - 1]]["name"]}'),
+                          actions: <Widget>[
+                            TextButton(
+                              child: const Text('OK'),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    ).then((_) => play(context));
+                  }
+                }
+              : null,
+          tooltip: 'Pasirinkti',
+          elevation: 0.0,
+          child: const Icon(Icons.check_rounded),
+        ),
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat);
   }
 
@@ -490,7 +492,7 @@ class LearningPlayState extends State<LearningPlay>
 class ControlButtons extends StatelessWidget {
   final AudioPlayer player;
 
-  const ControlButtons(this.player, {Key? key}) : super(key: key);
+  const ControlButtons(this.player, {super.key});
 
   @override
   Widget build(BuildContext context) {
