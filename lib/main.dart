@@ -22,7 +22,7 @@ import 'package:http/http.dart' as http;
 import 'package:encrypt/encrypt.dart' as enc;
 import 'dart:convert';
 import 'addlicences.dart';
-import 'localfolder.dart';
+// import 'localfolder.dart';
 import 'globals.dart' as globals;
 import 'package:plausible_analytics/plausible_analytics.dart';
 // import 'package:go_router/go_router.dart';
@@ -829,48 +829,49 @@ class _LoginPageState extends State<LoginPage> {
             title: const Tooltip(
                 message: "library.licejus.lt prisijungimas",
                 child: Text('library.licejus.lt prisijungimas')),
-            actions: kDebugMode
-                ? mygtukai(context, setState) +
-                    <Widget>[
-                      Tooltip(
-                          message: "Praleisti",
-                          child: IconButton(
-                              icon: const Icon(
-                                  Icons.subdirectory_arrow_right_rounded),
-                              onPressed: () {
-                                showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return AlertDialog(
-                                        title: const Text(
-                                            'Ar tikrai norite praleisti?'),
-                                        content: const SingleChildScrollView(
-                                            child: Text(
-                                                "Praleidus prisijungimą nebus pasiekiami library.licejus.lt kūriniai, juos reikės įkelti iš savo įrenginio. Vėlesnis grįžimas į prisijungimo langą galimas.")),
-                                        actions: [
-                                          TextButton(
-                                              onPressed: () {
-                                                _setSkipped(true);
-                                                isSkipped = true;
-                                                //Navigator.of(context).pop();
-                                                Navigator.of(context)
-                                                    .push(MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      FolderSelect(),
-                                                ));
-                                              },
-                                              child: const Text("Suprantu")),
-                                          TextButton(
-                                              onPressed: () {
-                                                Navigator.of(context).pop();
-                                              },
-                                              child: const Text("Grįžti"))
-                                        ],
-                                      );
-                                    });
-                              }))
-                    ]
-                : mygtukai(context, setState)),
+            actions:
+                // kDebugMode
+                //     ? mygtukai(context, setState) +
+                //         <Widget>[
+                //           Tooltip(
+                //               message: "Praleisti",
+                //               child: IconButton(
+                //                   icon: const Icon(
+                //                       Icons.subdirectory_arrow_right_rounded),
+                //                   onPressed: () {
+                //                     showDialog(
+                //                         context: context,
+                //                         builder: (BuildContext context) {
+                //                           return AlertDialog(
+                //                             title: const Text(
+                //                                 'Ar tikrai norite praleisti?'),
+                //                             content: const SingleChildScrollView(
+                //                                 child: Text(
+                //                                     "Praleidus prisijungimą nebus pasiekiami library.licejus.lt kūriniai, juos reikės įkelti iš savo įrenginio. Vėlesnis grįžimas į prisijungimo langą galimas.")),
+                //                             actions: [
+                //                               TextButton(
+                //                                   onPressed: () {
+                //                                     _setSkipped(true);
+                //                                     isSkipped = true;
+                //                                     //Navigator.of(context).pop();
+                //                                     Navigator.of(context)
+                //                                         .push(MaterialPageRoute(
+                //                                       builder: (context) =>
+                //                                           FolderSelect(),
+                //                                     ));
+                //                                   },
+                //                                   child: const Text("Suprantu")),
+                //                               TextButton(
+                //                                   onPressed: () {
+                //                                     Navigator.of(context).pop();
+                //                                   },
+                //                                   child: const Text("Grįžti"))
+                //                             ],
+                //                           );
+                //                         });
+                //                   }))
+                //         ] :
+                mygtukai(context, setState)),
         body: Center(
           child: Form(
             key: _formKey,

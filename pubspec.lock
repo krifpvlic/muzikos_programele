@@ -177,14 +177,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.0"
-  file_system_access_api:
-    dependency: "direct main"
-    description:
-      name: file_system_access_api
-      sha256: bcbf061ce180dffcceed9faefab513e87bff1eef38c3ed99cf7c3bbbc65a34e1
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.1.0"
   flex_color_scheme:
     dependency: "direct main"
     description:

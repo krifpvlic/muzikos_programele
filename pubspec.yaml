@@ -48,7 +48,6 @@ dependencies:
   google_fonts: ^6.1.0
   matomo_tracker: ^4.1.1
   universal_html: ^2.2.1
-  file_system_access_api: ^1.1.0
   audio_session: ^0.1.18
   rxdart: ^0.27.7
   path: ^1.8.3

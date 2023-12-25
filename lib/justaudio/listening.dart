@@ -6,7 +6,7 @@ import 'common.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:path/path.dart' as p;
 // import 'package:matomo_tracker/matomo_tracker.dart';
-import '../localfolder.dart';
+// import '../localfolder.dart';
 import '../globals.dart' as globals;
 
 class ListPlay extends StatefulWidget {
@@ -119,16 +119,14 @@ class ListPlayState extends State<ListPlay>
                       setState(() {
                         _selectedIndex = value as int;
                       });
-                      !widget.local
-                          ? await _player.setAudioSource(AudioSource.uri(
-                              Uri.parse(
-                                  "${globals.serverUrl}${widget.linkList[_selectedIndex]}"),
-                              headers: {
-                                  'Authorization': widget.basicAuth
-                                }))
-                          : await _player.setAudioSource(MyCustomSource(widget
-                              .fileHandle
-                              .readAs)); //TODO: implement local file reading
+                      // !widget.local ?
+                      await _player.setAudioSource(AudioSource.uri(
+                          Uri.parse(
+                              "${globals.serverUrl}${widget.linkList[_selectedIndex]}"),
+                          headers: {'Authorization': widget.basicAuth}));
+                      // : await _player.setAudioSource(MyCustomSource(widget
+                      //     .fileHandle
+                      //     .readAs)); //TODO: implement local file reading
                       //setState(() {
                       //  duration = 0 as Duration;
                       //});
