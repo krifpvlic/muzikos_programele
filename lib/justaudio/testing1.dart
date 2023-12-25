@@ -8,13 +8,14 @@ import 'package:audio_session/audio_session.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:matomo_tracker/matomo_tracker.dart';
+// import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'common.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:path/path.dart' as path;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
+import 'package:muzikos_programele/main.dart';
 
 List<Map<String, dynamic>> createMusicPiecesList(List<String> links) {
   return List.generate(
@@ -51,7 +52,8 @@ class LearningPlay extends StatefulWidget {
 }
 
 class LearningPlayState extends State<LearningPlay>
-    with WidgetsBindingObserver, TraceableClientMixin {
+    with WidgetsBindingObserver //, TraceableClientMixin
+{
   final GlobalKey<State> _key = GlobalKey<State>();
   var _isRandomize = true;
   int? _selectedIndex;
@@ -247,6 +249,9 @@ class LearningPlayState extends State<LearningPlay>
       print(queue);
     }
     _init(context);
+    plausible.event(
+      page: 'testing',
+    );
   }
 
   Future<void> _init(BuildContext context) async {
@@ -331,7 +336,11 @@ class LearningPlayState extends State<LearningPlay>
       if (totalcorrect > (musicPiecesList.length / 3) &&
           totalcorrect >= 7 &&
           !goalTracked) {
-        MatomoTracker.instance.trackGoal(1);
+        plausible.event(
+          name: 'tested',
+          page: 'testing',
+        );
+        // MatomoTracker.instance.trackGoal(id: 1);
         goalTracked = true;
       }
     }
@@ -482,10 +491,10 @@ class LearningPlayState extends State<LearningPlay>
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat);
   }
 
-  @override
-  String get traceName => 'Testing';
-  @override
-  String get traceTitle => "GabalAI";
+  // @override
+  // String get traceName => 'Testing';
+  // @override
+  // String get traceTitle => "GabalAI";
 }
 
 /// Displays the play/pause button and volume/speed sliders.

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:matomo_tracker/matomo_tracker.dart';
+// import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:muzikos_programele/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'justaudio/listening.dart';
@@ -35,7 +35,8 @@ class ModifyListPage extends StatefulWidget {
 }
 
 class _ModifyListPageState extends State<ModifyListPage>
-    with TraceableClientMixin {
+// with TraceableClientMixin
+{
   Set<int> _selectedIndexes =
       Set<int>.from(List.generate(partLinkList.length, (index) => index));
   String? _selectionIdentifier;
@@ -47,6 +48,9 @@ class _ModifyListPageState extends State<ModifyListPage>
     _selectionIdentifier =
         "${widget.course}${widget.semester}${widget.selectionIndex}sel";
     handleSave();
+    plausible.event(
+      page: 'modify',
+    );
   }
 
   //function to create modifiedLinkList
@@ -186,9 +190,7 @@ class _ModifyListPageState extends State<ModifyListPage>
         ));
   }
 
-  @override
   String get traceName => 'Modify';
-  @override
   String get traceTitle => "GabalAI";
 }
 
@@ -209,7 +211,8 @@ class DirectoryPage extends StatefulWidget {
 }
 
 class _DirectoryPageState extends State<DirectoryPage>
-    with TraceableClientMixin {
+// with TraceableClientMixin
+{
   String? _selectedFolder;
   late var _linkListStr;
   late String _username;
@@ -231,6 +234,9 @@ class _DirectoryPageState extends State<DirectoryPage>
             filePath.endsWith('.aac'))
         .toList();
     //_saveCurrentState();
+    plausible.event(
+      page: '${widget.course}k',
+    );
   }
 
   void showInfo(double infoLevel) {
@@ -392,8 +398,6 @@ class _DirectoryPageState extends State<DirectoryPage>
         ));
   }
 
-  @override
-  String get traceName => 'Selection ${widget.course}k';
-  @override
-  String get traceTitle => "GabalAI";
+  // String get traceName => 'Selection ${widget.course}k';
+  // String get traceTitle => "GabalAI";
 }

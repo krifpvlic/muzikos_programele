@@ -1,8 +1,11 @@
 //to test - if matomo works on first launch; check if matomo license is shown
 //add selection for kuriniai
 import 'package:flutter/gestures.dart';
+// import 'package:muzikos_programele/justaudio/listening.dart';
+// import 'package:muzikos_programele/justaudio/testing1.dart';
+// import 'package:plausible_analytics/navigator_observer.dart';
 import 'package:universal_html/html.dart' as html;
-import 'package:matomo_tracker/matomo_tracker.dart';
+// import 'package:matomo_tracker/matomo_tracker.dart';
 import 'dart:io';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
@@ -21,6 +24,41 @@ import 'dart:convert';
 import 'addlicences.dart';
 import 'localfolder.dart';
 import 'globals.dart' as globals;
+import 'package:plausible_analytics/plausible_analytics.dart';
+// import 'package:go_router/go_router.dart';
+
+// final _router = GoRouter(
+//   routes: [
+//     GoRoute(
+//       path: '/',
+//       builder: (context, state) => const MainPage(),
+//     ),
+//     GoRoute(
+//       path: '/home',
+//       builder: (context, state) => const HomePage(),
+//     ),
+//     GoRoute(
+//       path: '/login',
+//       builder: (context, state) => const LoginPage(),
+//     ),
+//     GoRoute(
+//       path: '/select',
+//       builder: (context, state) => const FolderSelect(),
+//     ),
+//     GoRoute(
+//       path: '/modifylist',
+//       builder: (context, state) => const ModifyListPage(),
+//     ),
+//     GoRoute(
+//       path: '/play',
+//       builder: (context, state) => const ListPlay(),
+//     ),
+//     GoRoute(
+//       path: '/learn',
+//       builder: (context, state) => const LearningPlay(),
+//     ),
+//   ],
+// );
 
 late String basicAuth;
 String? _username;
@@ -35,16 +73,33 @@ late var listConverted;
 
 BuildContext? dabartinis;
 
+const String serverUrl = "https://renginiai.licejus.lt/pla";
+const String domain = "gabalai.licejus.lt";
+final plausible = Plausible(serverUrl, domain);
+
 void setAnalytics(int value) async {
   final prefs = await SharedPreferences.getInstance();
   prefs.setInt('analytics', value);
   analyticsEnabled = value;
   if (value == 1) {
-    MatomoTracker.instance.setOptOut(optOut: false);
+    // MatomoTracker.instance.setOptOut(optOut: false);
+    plausible.enabled = true;
   }
   if (value == 0) {
-    MatomoTracker.instance.setOptOut(optOut: true);
+    // MatomoTracker.instance.setOptOut(optOut: true);
+    plausible.enabled = false;
   }
+}
+
+void checkAnalytics(String title) async {
+  final prefs = await SharedPreferences.getInstance();
+  int? analyticsEnabled = prefs.getInt('analytics');
+  if (analyticsEnabled == 0) {
+    plausible.enabled = false;
+  }
+  plausible.event(
+    page: title,
+  );
 }
 
 void analyticsDialog() async {
@@ -63,7 +118,7 @@ void analyticsDialog() async {
                     constraints: const BoxConstraints(maxWidth: 600),
                     child: Column(children: [
                       const Text(
-                          "Šioje programoje naudojama Matomo Analytics - duomenų privatumą užtikrinantis, atviro kodo svetainių ir programų analitikos įrankis. Paspaudus \"Sutinku\" įrankis bus įgalintas, o jo naudojimo galima atsisakyti paspaudus \"Nesutinku\".\n\nPasirinkimą galima pakeisti prisijungimo arba kurso pasirinkimo lange paspaudus viršuje dešinėje esantį informacijos mygtuką ir išlindusiame lange paspaudus \"Analitikos pasirinkimas\".\n"),
+                          "Šioje programoje naudojama Plausible - duomenų privatumą užtikrinantis, atviro kodo svetainių ir programų analitikos įrankis. Paspaudus \"Sutinku\" įrankis bus įgalintas, o jo naudojimo galima atsisakyti paspaudus \"Nesutinku\".\n\nPasirinkimą galima pakeisti prisijungimo arba kurso pasirinkimo lange paspaudus viršuje dešinėje esantį informacijos mygtuką ir išlindusiame lange paspaudus \"Analitikos pasirinkimas\".\n"),
                       InkWell(
                         child: const Text(
                           'Viešai prieinama analitikos versija',
@@ -71,20 +126,21 @@ void analyticsDialog() async {
                         ),
                         onTap: () async {
                           if (await canLaunchUrlString(
-                              "https://gabalai.licejus.lt/mt/")) {
-                            launchUrlString("https://gabalai.licejus.lt/mt/");
+                              "https://renginiai.licejus.lt/pla/gabalai.licejus.lt/")) {
+                            launchUrlString(
+                                "https://renginiai.licejus.lt/pla/gabalai.licejus.lt/");
                           }
                         },
                       ),
                       InkWell(
                         child: const Text(
-                          'Matomo duomenų politika',
+                          'Plausible duomenų politika',
                           style: TextStyle(color: Color(0xff8484f2)),
                         ),
                         onTap: () async {
                           if (await canLaunchUrlString(
-                              "https://matomo.org/privacy/")) {
-                            launchUrlString("https://matomo.org/privacy/");
+                              "https://plausible.io/privacy/")) {
+                            launchUrlString("https://plausible.io/privacy/");
                           }
                         },
                       ),
@@ -93,7 +149,8 @@ void analyticsDialog() async {
               TextButton(
                 child: const Text('Nesutinku'),
                 onPressed: () {
-                  MatomoTracker.instance.setOptOut(optOut: true);
+                  // MatomoTracker.instance.setOptOut(optOut: true);
+                  plausible.enabled = false;
                   setAnalytics(0);
                   Navigator.of(context).pop();
                 },
@@ -101,7 +158,8 @@ void analyticsDialog() async {
               TextButton(
                 child: const Text('Sutinku'),
                 onPressed: () {
-                  MatomoTracker.instance.setOptOut(optOut: false);
+                  // MatomoTracker.instance.setOptOut(optOut: false);
+                  plausible.enabled = true;
                   setAnalytics(1);
                   Navigator.of(context).pop();
                 },
@@ -234,22 +292,28 @@ void main() async {
     await prefs.remove("matomo_visitor_id");
     await prefs.remove("matomo_visit_count");
   }
+  int? visitcount = prefs.getInt("matomo_visit_count");
+  if (visitcount != null) {
+    await prefs.remove("matomo_opt_out");
+    await prefs.remove("matomo_visit_count");
+  }
+
   analyticsEnabled = prefs.getInt('analytics') ?? -1;
   if (html.window.navigator.doNotTrack == '1') {
     analyticsEnabled = 0;
   }
-  if (analyticsEnabled == -1) {
-    //MatomoTracker.instance.setOptOut(optOut: true);
-    analyticsDialog();
-  }
-  await MatomoTracker.instance.initialize(
-    siteId: 1,
-    url: 'https://gabalai.licejus.lt/mt/matomo.php',
-    cookieless: true,
-  );
-  if (analyticsEnabled != 1) {
-    await MatomoTracker.instance.setOptOut(optOut: true);
-  }
+  // if (analyticsEnabled == -1) {
+  //   //MatomoTracker.instance.setOptOut(optOut: true);
+  //   analyticsDialog();
+  // }
+  // await MatomoTracker.instance.initialize(
+  //   siteId: 1,
+  //   url: 'https://gabalai.licejus.lt/mt/matomo.php',
+  //   cookieless: true,
+  // );
+  // if (analyticsEnabled != 1) {
+  //   await MatomoTracker.instance.setOptOut(optOut: true);
+  // }
 
   runApp(const MyApp());
 
@@ -340,6 +404,9 @@ class MyApp extends StatelessWidget {
                   !isSaved & !isSkipped ? const LoginPage() : const HomePage(),
               theme: theme,
               darkTheme: darkTheme,
+              // navigatorObservers: [
+              //   PlausibleNavigatorObserver(plausible),
+              // ],
             ));
   }
 }
@@ -569,7 +636,7 @@ List<Widget> mygtukai(
                       ),
                       const TextSpan(
                         text:
-                            '\nProgramos versija - beta 1.3\nAnkstesnė versija - ',
+                            '\nProgramos versija - beta 1.4\nAnkstesnė versija - ',
                       ),
                       TextSpan(
                         text: 'gabalai.licejus.lt/old',
@@ -682,6 +749,7 @@ class _LoginPageState extends State<LoginPage> {
     super.initState();
     checkUpdates(context);
     dabartinis = context;
+    checkAnalytics('login');
   }
 
   void failAuthDialog() {
@@ -878,7 +946,9 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with TraceableClientMixin {
+class _HomePageState extends State<HomePage>
+// with TraceableClientMixin
+{
   String? _selectedCourse;
   String? _selectedSemester;
   /*final event = plausible.event(
@@ -898,6 +968,7 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
     checkUpdates(context);
     _loadSelection();
     dabartinis = context;
+    checkAnalytics('homescreen');
   }
 
   Future<void> loadlicejus() async {
@@ -1089,8 +1160,8 @@ class _HomePageState extends State<HomePage> with TraceableClientMixin {
         ));
   }
 
-  @override
-  String get traceName => 'Home';
-  @override
-  String get traceTitle => "GabalAI";
+  // @override
+  // String get traceName => 'Home';
+  // @override
+  // String get traceTitle => "GabalAI";
 }

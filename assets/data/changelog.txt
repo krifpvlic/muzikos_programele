@@ -1,4 +1,5 @@
 Pakeitimų sąrašas:
 
 Galima modifikuoti testavimo kūrinių sąrašą
+Pakeistas analitikos įrankis į Plausible
 Atnaujinti Flutter paketai

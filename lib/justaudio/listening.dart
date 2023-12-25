@@ -1,10 +1,11 @@
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:muzikos_programele/main.dart';
 import 'common.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:path/path.dart' as p;
-import 'package:matomo_tracker/matomo_tracker.dart';
+// import 'package:matomo_tracker/matomo_tracker.dart';
 import '../localfolder.dart';
 import '../globals.dart' as globals;
 
@@ -31,7 +32,8 @@ class ListPlay extends StatefulWidget {
 }
 
 class ListPlayState extends State<ListPlay>
-    with WidgetsBindingObserver, TraceableClientMixin {
+    with WidgetsBindingObserver //, TraceableClientMixin
+{
   final _player = AudioPlayer();
   int _selectedIndex = -1;
   @override
@@ -40,6 +42,9 @@ class ListPlayState extends State<ListPlay>
     ambiguate(WidgetsBinding.instance)!.addObserver(this);
 
     _init();
+    plausible.event(
+      page: 'listening',
+    );
   }
 
   Future<void> _init() async {
@@ -169,10 +174,10 @@ class ListPlayState extends State<ListPlay>
         ));
   }
 
-  @override
-  String get traceName => 'Listening';
-  @override
-  String get traceTitle => "GabalAI";
+  // @override
+  // String get traceName => 'Listening';
+  // @override
+  // String get traceTitle => "GabalAI";
 }
 
 /// Displays the play/pause button and volume/speed sliders.
